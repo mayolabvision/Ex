@@ -1,0 +1,60 @@
+<stimulus name="orituning" repeats="10" ex="ex_changeDetect_dotsTrain" bgColor="127 127 127">
+        <params>
+            <phase>0</phase>
+            <spatial>.03</spatial>
+            <temporal>3</temporal>
+            <radius>200</radius>
+            <contrast>1</contrast>
+            <onex>-270</onex>
+            <oney>0</oney>
+            <twox>270</twox>
+            <twoy>0</twoy>
+            <fDotx>0</fDotx>
+            <fDoty>130</fDoty>
+            <sDotx>0</sDotx>
+            <sDoty>-130</sDoty>        
+            <choiceDotRadius>20</choiceDotRadius>
+            <orientation1>170</orientation1>        
+            <orientation2>10</orientation2> 
+            <stimulusDuration>40</stimulusDuration>
+            <choicePeriod>300</choicePeriod>
+            <GhelpColor>[0 255 0]'</GhelpColor> 
+            <RhelpColor>[255 0 0]'</RhelpColor> 
+            <showHole>0</showHole> 
+            <showHoleChoice>0</showHoleChoice>
+            <choiceHoleRad>5</choiceHoleRad> 
+            <holeRad>9</holeRad> 
+            <fixJuice>0</fixJuice>    
+            <fixX>0</fixX>
+            <fixY>0</fixY>
+            <fixRad>5</fixRad>
+            <timeToFix>1000</timeToFix>
+            <stayOnTarget>200</stayOnTarget>      
+            <noFixTimeout>1000</noFixTimeout>
+            <frontDoor>8</frontDoor>
+            <oneSideOnly>1</oneSideOnly>
+            <whichSide>-1</whichSide>
+            <falseAlarmTimeout>4000</falseAlarmTimeout>
+            <falseStartTimeout>3000</falseStartTimeout>
+            <oriTargAmp>[-90 -60 -45 45 60 90]'</oriTargAmp>
+            <interStimulusInterval>[100:10:200]'</interStimulusInterval>
+            <beforeGoCueInterval>[100:10:150]'</beforeGoCueInterval>
+             <noGoCueTimeout>2000</noGoCueTimeout> 
+            <intervalBeforeChoice>[100]'</intervalBeforeChoice>
+            <rewardCueSide>1</rewardCueSide>
+            <rewardFactor>1</rewardFactor>
+            <blockSize>100</blockSize>
+            <manipCriterion>1</manipCriterion>
+            <manipSens>0</manipSens>
+            <noManip>0</noManip>
+            <cueType>1</cueType>
+            <InterTrialPause>500</InterTrialPause>  
+           
+        </params>
+        <randoms>
+            <preStimFix>600:10:800</preStimFix> 
+            <isCatch>[1 1 1 1 1 0 0 0 0 0]</isCatch> 
+            <choiceDotPos>[-1 1]</choiceDotPos>
+            <posPick>[-1 1]</posPick>
+        </randoms>
+</stimulus>

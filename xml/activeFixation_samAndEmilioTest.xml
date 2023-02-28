@@ -1,0 +1,22 @@
+<stimulus name="fixblank" repeats="10" ex="ex_activeFixation_samAndEmilioTest" bgColor="128 128 128">
+    <params type="blank" runline="stimLength">
+        <stimLength>100</stimLength>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0 0 255]'</fixColor>
+        <cursorRad>20</cursorRad>
+        <cursorColor>[255 0 0]'</cursorColor>
+        <preStimFix>150</preStimFix>
+        <timeToFix>1000</timeToFix>
+        <timeForJoy>1000</timeForJoy>
+        <saccadeInitiate>200</saccadeInitiate>
+        <saccadeTime>500</saccadeTime>
+        <stayOnTarget>250</stayOnTarget>
+        <saccadeLength>150</saccadeLength>
+        <noFixTimeout>1000</noFixTimeout>
+        <saccadeDir>0:90:270</saccadeDir>
+    </params>
+    <randoms>
+    </randoms>
+</stimulus>

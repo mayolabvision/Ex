@@ -1,0 +1,38 @@
+<stimulus repeats="3000" ex="ex_activeFixation_Adroit" bgColor="128 128 128">
+    <params>
+        <type>'movie_morph'</type>
+        <numframes>10</numframes>
+        <centerx>130</centerx>
+        <centery>-200</centery>
+    
+        <startframe>1</startframe>
+        <dwell>1</dwell>
+        <fixX>0</fixX>
+        <fixY>150</fixY>
+        <fixRad>5</fixRad>
+        <imgDisplaySize>300</imgDisplaySize>
+        <fixColor>[0;0;255]</fixColor>
+        <preStimFix>150</preStimFix>
+        <interImageInterval>100</interImageInterval>
+        <interTrialInterval>300</interTrialInterval>
+        <timeToFix>1000</timeToFix>
+        <saccadeInitiate>400</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <saccadeLength>150</saccadeLength>
+        <noFixTimeout>1000</noFixTimeout>
+        <image_folder>['i';'m';'a';'g';'e';'s';'_']</image_folder>
+        <day_id>['1';'9';'0';'9';'2';'3']</day_id>
+        <file_prefix>['i';'m';'a';'g';'e']</file_prefix>
+    </params>
+    <randoms>
+        <saccadeDir>0:359</saccadeDir>
+        <image1_id>1:1200</image1_id>
+        <image2_id>1:1200</image2_id>
+        <image3_id>1:1200</image3_id>
+        <image4_id>1:1200</image4_id>
+        <image5_id>1:1200</image5_id>
+        <image6_id>1:1200</image6_id>
+        <preTargetInterval>150:10:300</preTargetInterval>
+    </randoms>
+</stimulus>

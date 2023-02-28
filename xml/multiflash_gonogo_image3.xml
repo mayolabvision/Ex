@@ -1,0 +1,49 @@
+<stimulus name="NMTSIMG" repeats="40" ex="ex_MultiFlashGoNoGo3" bgColor="128 128 128">
+    <params>  
+        <context>[2]</context>
+        <sampleSuffix>[511:530]</sampleSuffix>
+        <targ>[1 2 3 4 1 2 3 4 5]</targ>
+    
+        <C1morphAngle>[4;15;50;80;-5]</C1morphAngle>
+        <C2morphAngle>[2;5;25;50;-15]</C2morphAngle>
+        
+        <blockSwitch>1</blockSwitch>
+		<addNoise>0</addNoise>
+        <trialsPerContext>180</trialsPerContext>
+        <ITI>300</ITI>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixColor>[255;255;0]</fixColor>
+        <fixRad>5</fixRad>
+        <fixWinR>50</fixWinR>
+        <timeToFix>1000</timeToFix>
+        <noFixTimeout>400</noFixTimeout>
+        <breakFixTimeout>4000</breakFixTimeout>
+        <sacWinR>15</sacWinR>
+
+        <stimX>175</stimX>
+        <stimY>-120</stimY>
+        <!--<angle>291</angle>-->
+        <imgDisplaySize>300</imgDisplaySize>
+        <aperture>150</aperture> 
+        <alpha>40</alpha>
+        <noiseN>25</noiseN>
+        <sample>['Pati_NSimages/fromAdroit']</sample>
+        <stimOnsetDelay>300</stimOnsetDelay>
+        <stimDuration>300</stimDuration>
+        <stimWinR>150</stimWinR>        
+        <IFImin>200</IFImin>
+        <IFImax>350</IFImax>
+        <firstFlashProb>0.33</firstFlashProb>
+        <maxFlash>30</maxFlash>
+           
+        <minRT>100</minRT>
+        <saccadeInitiate>350</saccadeInitiate>
+        <saccadeTime>150</saccadeTime>
+        <stayOnTarget>250</stayOnTarget>
+        <rewardDist>[1;1.5;2;3;5;7;repmat(7,30,1)]</rewardDist>
+    </params>
+    <randoms>        
+        <seed>[1:1000]</seed>
+    </randoms>
+</stimulus>             

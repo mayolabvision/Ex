@@ -1,0 +1,54 @@
+<stimulus name="NMTSIMG" repeats="40" ex="ex_MultiFlashGoNoGo4" bgColor="128 128 128">
+    <params>  
+        <context>[2]</context>
+        <sampleSuffix>[1000]</sampleSuffix>
+        <targ>[1 2 1 2 1 2]</targ>        
+        
+        <C1morphAngle>[70;90]</C1morphAngle> <!--color-->
+        <C2morphAngle>[70;90]</C2morphAngle> <!--ori-->
+        
+        <!--set flash dist for training-->
+        <manualFlash>[1 1 1 2]</manualFlash>
+        <!--set flash dist for training-->
+        
+        <blockSwitch>0</blockSwitch>
+		<addNoise>0</addNoise>
+        <trialsPerContext>80</trialsPerContext>
+        <ITI>300</ITI>
+        <fixX>0</fixX>
+        <fixY>100</fixY>
+        <fixColor>[255;255;0]</fixColor>
+        <fixRad>5</fixRad>
+        <fixWinR>50</fixWinR>
+        <timeToFix>1000</timeToFix>
+        <noFixTimeout>400</noFixTimeout>
+        <breakFixTimeout>500</breakFixTimeout>
+        <sacWinR>15</sacWinR>
+
+        <stimX>130</stimX> <!--relative to fixation-->
+        <stimY>-250</stimY> <!--relative to fixation-->
+        <angle>291</angle>
+        <imgDisplaySize>300</imgDisplaySize>
+        <aperture>150</aperture> 
+        <alpha>40</alpha>
+        <noiseN>25</noiseN>
+        <!--<sample>['Pati_NSimages/fromAdroit']</sample>-->
+        <sample>['Pati_NSimages']</sample>
+        <stimOnsetDelay>300</stimOnsetDelay>
+        <stimDuration>300</stimDuration>
+        <stimWinR>150</stimWinR>        
+        <IFImin>200</IFImin>
+        <IFImax>350</IFImax>
+        <firstFlashProb>0.3</firstFlashProb>
+        <maxFlash>30</maxFlash>
+           
+        <minRT>100</minRT>
+        <saccadeInitiate>350</saccadeInitiate>
+        <saccadeTime>150</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <rewardDist>[1;2;3;5;7;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8;8]</rewardDist>
+    </params>
+    <randoms>        
+        <seed>[1:1000]</seed>
+    </randoms>
+</stimulus>             

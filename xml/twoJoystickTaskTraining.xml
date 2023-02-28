@@ -1,0 +1,35 @@
+<stimulus name="twoJoystickTask" repeats="10" ex="ex_twoJoystickTaskTraining" bgColor="128 128 128">
+    <params type="blank" runline="stimLength">
+        <stimLength>50</stimLength>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <leftJoyX>-300</leftJoyX>
+        <leftJoyY>-200</leftJoyY>
+        <rightJoyX>300</rightJoyX>
+        <rightJoyY>-200</rightJoyY>
+        <rectHalfWidth>20</rectHalfWidth>
+        <rectHalfHeight>20</rectHalfHeight>
+        <rectColorOn>[0 255 0]'</rectColorOn>
+        <rectColorOff>[255 0 0]'</rectColorOff>
+        <fixRad>60</fixRad>
+        <bgColor>[128 128 128]'</bgColor>
+        <fixColor>[0 0 255]'</fixColor>
+        <targColor>[255 255 255]'</targColor>
+        <cursorRad>20</cursorRad>
+        <cursorColor>[255 0 0]'</cursorColor>
+        <timeToStaticJoystickGrab>1000</timeToStaticJoystickGrab>
+        <movementJoystickHold>[150,150,300,300,300,450,450]</movementJoystickHold>
+        <movementJoyTime>1500</movementJoyTime>
+        <targetAngle>0:45:315</targetAngle>
+        <targRad>40</targRad>
+        <targetDistance>150</targetDistance>
+        <joystickName>'DragonRise'</joystickName>
+        <secsCursorToGoCue>0.4</secsCursorToGoCue>
+        <targetDuration>500</targetDuration>
+        <targToCursorDelay>-100</targToCursorDelay>
+        <joystickPxPerSec>300</joystickPxPerSec>
+        <targWinCursRad>50</targWinCursRad>
+    </params>
+    <randoms>
+    </randoms>
+</stimulus>

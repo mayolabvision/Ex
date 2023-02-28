@@ -1,0 +1,68 @@
+<stimulus name="dirtuningbci" repeats="40" ex="ex_DistanceBCI" bgColor="0 0 0">
+    <params>        
+        <numframes>1000</numframes>
+        <dwell>1000</dwell>
+        <startframe>1</startframe>
+        <centerx>0</centerx>
+        <centery>0</centery>
+        <adeptCloseorFar>[1]</adeptCloseorFar>
+        <distance>16*17</distance>
+        <size>[30]</size>
+        <gratingsordots>[0]</gratingsordots>
+        <gratingsordotsother>[0]</gratingsordotsother>
+        <othercolorflag>[1]</othercolorflag>
+        <suffix>[1]</suffix>
+        <sizeOther>[15]</sizeOther>
+        <noisyFreq1>[4 5 7 10 20]</noisyFreq1>
+        <noisyFreq2>[5 10]</noisyFreq2>
+        <angle>[0 180]'</angle>
+        <allAngles>[-1]'</allAngles>
+        <delayAngle>[0 180]'</delayAngle>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0 0 255]</fixColor>
+        <targetColor>[180 180 180]'</targetColor>
+        <cursorColor>[150 150 150]'</cursorColor>
+        <targetColorOther>[128 128 128]'</targetColorOther>
+        <adeptsuffix>[17485 12241 18649 15746 16696 17172 18234 16616]'</adeptsuffix>
+        <indextouse>[3 1 2 4 5 8 6 8]'</indextouse>
+        <timeToFix>1000</timeToFix>
+        <targetDuration>200</targetDuration>
+        <noFixTimeout>1500</noFixTimeout>
+        <targetOnsetDelay>200</targetOnsetDelay>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>100</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <bciTargRadx>80</bciTargRadx>
+        <bciTargRady>40</bciTargRady>
+        <bciCursorEnable>1</bciCursorEnable>
+        <bciEnable>1</bciEnable>
+        <cursorVisible>1</cursorVisible>
+        <bciRewardEnable>0</bciRewardEnable>
+        <updatesOnTarget>2</updatesOnTarget>
+        <cursorSize>50</cursorSize>
+        <bciJuice>1</bciJuice>
+        <saccadeJuice>1</saccadeJuice>
+        <bciSaccadeJuice>1</bciSaccadeJuice>
+        <errorBadHandshakeFlag>0</errorBadHandshakeFlag>
+        <gratori>[0 45 90 135]'</gratori>
+        <gratspatial>0.015</gratspatial>
+        <gratcontrast>1</gratcontrast>
+        <adeptImageFlag>0</adeptImageFlag>
+        <showDelayTargetFlag>1</showDelayTargetFlag>
+        <lowerboundprop>0.1</lowerboundprop>
+        <annulusSizeAtThresh>0.2</annulusSizeAtThresh>
+        <distfunflag>1</distfunflag>
+        <minRxn>0.08</minRxn>
+        <miniblocksize>7</miniblocksize>
+        <nCueTrials>7</nCueTrials>
+        <earlySaccadeTimeOut>1000</earlySaccadeTimeOut>
+        <dimCueStartTrial>3</dimCueStartTrial>
+        <dimtargetColor>[145 145 145]'</dimtargetColor>
+    </params>
+    <randoms>
+        <fixDuration>[1800:100:2300]</fixDuration>
+        <dimblock>[1 1 1 1 1 1 1 1 1 0]</dimblock>
+    </randoms>
+</stimulus>                                       

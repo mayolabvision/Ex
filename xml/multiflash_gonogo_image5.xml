@@ -1,0 +1,61 @@
+<stimulus name="NMTSIMG" repeats="40" ex="ex_MultiFlashGoNoGo5" bgColor="128 128 128">
+    <params>  
+        <context>[1]</context>
+        <sampleSuffix>[1]</sampleSuffix>
+        <targ>[5]</targ>
+        <!--<juiceTTLDuration>95</juiceTTLDuration>-->
+        <!--<juiceInterval>100</juiceInterval>-->
+        <!--<juiceX>1</juiceX>-->
+        
+        <C1morphAngle>[4;10;30;70;100]</C1morphAngle> <!--color-->
+        <C2morphAngle>[4;7;15;30;60;90]</C2morphAngle> <!--ori-->
+        <!--<dot1Color>[160;30;30]</dot1Color>-->
+        <!--<dot1Targs>[100;30;70]</dot1Targs>-->
+        <!--<numTarg>1</numTarg>-->
+        <!--<stimNum>1</stimNum>-->
+        
+        <!--set flash dist for training-->
+        <manualFlash>[1 1 1 2]</manualFlash>
+        <!--set flash dist for training-->
+        
+        <blockSwitch>0</blockSwitch>
+		<addNoise>0</addNoise>
+        <trialsPerContext>60</trialsPerContext>
+        <ITI>300</ITI>
+        <fixX>0</fixX>
+        <fixY>100</fixY>
+        <fixColor>[255;255;0]</fixColor>
+        <fixRad>5</fixRad>
+        <fixWinR>50</fixWinR>
+        <timeToFix>1000</timeToFix>
+        <noFixTimeout>400</noFixTimeout>
+        <breakFixTimeout>4000</breakFixTimeout>
+        <sacWinR>15</sacWinR>
+
+        <stimX>120</stimX> <!--relative to fixation-->
+        <stimY>-120</stimY> <!--relative to fixation-->
+        <!--<angle>291</angle>-->
+        <imgDisplaySize>300</imgDisplaySize>
+        <aperture>100</aperture> 
+        <alpha>40</alpha>
+        <noiseN>25</noiseN>
+        <sample>['Pati_NSimages/fromAdroit']</sample>
+        <!--<sample>['Pati_NSimages']</sample>-->
+        <stimOnsetDelay>300</stimOnsetDelay>
+        <stimDuration>300</stimDuration>
+        <stimWinR>150</stimWinR>        
+        <IFImin>200</IFImin>
+        <IFImax>350</IFImax>
+        <firstFlashProb>0.33</firstFlashProb>
+        <maxFlash>30</maxFlash>
+           
+        <minRT>100</minRT>
+        <saccadeInitiate>350</saccadeInitiate>
+        <saccadeTime>150</saccadeTime>
+        <stayOnTarget>200</stayOnTarget>
+        <rewardDist>[1;1.25;1.5;2;3;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5;4.5]</rewardDist>
+    </params>
+    <randoms>        
+        <seed>[1:1000]</seed>
+    </randoms>
+</stimulus>             

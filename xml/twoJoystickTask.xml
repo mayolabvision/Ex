@@ -1,0 +1,27 @@
+<stimulus name="twoJoystickTask" repeats="10" ex="ex_twoJoystickTask" bgColor="128 128 128">
+    <params type="blank" runline="stimLength">
+        <stimLength>50</stimLength>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <bgColor>[128 128 128]'</bgColor>
+        <fixColor>[0 0 255]'</fixColor>
+        <targColor>[255 255 255]'</targColor>
+        <cursorRad>20</cursorRad>
+        <cursorColor>[255 0 0]'</cursorColor>
+        <timeToStaticJoystickGrab>1000</timeToStaticJoystickGrab>
+        <movementJoystickHold>300</movementJoystickHold>
+        <movementJoyTime>1000</movementJoyTime>
+        <targRad>20</targRad>
+        <targetDistance>150</targetDistance>
+        <targetAngle>0:90:270</targetAngle>
+        <joystickName>'DragonRise'</joystickName>
+        <secsCursorToGoCue>0.4</secsCursorToGoCue>
+        <targetDuration>500</targetDuration>
+        <targToCursorDelay>-100</targToCursorDelay>
+        <joystickPxPerSec>300</joystickPxPerSec>
+        <targWinCursRad>40</targWinCursRad>
+    </params>
+    <randoms>
+    </randoms>
+</stimulus>

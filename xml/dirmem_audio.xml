@@ -1,0 +1,26 @@
+<stimulus name="dirtuning" repeats="40" ex="ex_SaccadeTask_audio" bgColor="0 0 0">
+    <params>
+        <distance>[171]</distance>
+        <angle>0:45:315</angle>
+        <size>15</size>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <targetColor>[255;0;100]</targetColor>
+        <timeToFix>1000</timeToFix>
+        <targetDuration>50</targetDuration>
+        <noFixTimeout>2000</noFixTimeout>
+        <targetOnsetDelay>200</targetOnsetDelay>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <fixDuration>[850]</fixDuration>
+    </params>  
+    <randoms>
+        <soundfreq>[2000:1000:10000]</soundfreq>           
+        <soundDuration>[200]</soundDuration>
+        <playSound>[0 0 0 1]</playSound>
+        <preSoundTime>[100]</preSoundTime>
+    </randoms>
+</stimulus>                                       

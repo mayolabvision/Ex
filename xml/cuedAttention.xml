@@ -1,0 +1,55 @@
+<stimulus name="orituning" repeats="10" ex="ex_cuedAttention_multipleStims" bgColor="127 127 127">
+    <params type="grating" runline="stimLength orientation phase spatial temporal centerx centery radius contrast">                
+        <phase>0</phase>
+        <spatial>.05</spatial>
+        <temporal>3</temporal>
+        <radius>50</radius>
+        <contrast>1</contrast>
+        <centerx>-200</centerx>
+        <centery>-68</centery>
+        <orientation1>0</orientation1>        
+        <orientation2>90</orientation2> 
+        <stimulusDuration>30</stimulusDuration>
+        <waitAfterTarget>10</waitAfterTarget>
+        <tooSlow>1</tooSlow>
+        <cueDuration>0.12</cueDuration>
+        <rewardHalflife>3</rewardHalflife>
+        <rewardCap>20</rewardCap>
+        <rewardBias>1</rewardBias>
+    
+        <miniblockSize>80</miniblockSize>
+        <nCueTrials>0</nCueTrials>
+        <maxStims>3</maxStims>
+        <targProb>0.5</targProb>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <helpFixColor>[0;0;255]</helpFixColor>
+        <timeToFix>1000</timeToFix>
+        <stayOnTarget>50</stayOnTarget>      
+        <noFixTimeout>1000</noFixTimeout>
+        <falseAlarmTimeout>6000</falseAlarmTimeout>
+        <cueFreq>[1000;440]</cueFreq>
+        <startTargAmp>[-20;20]</startTargAmp>
+        <invalidTargAmp>[-20;20]</invalidTargAmp>
+        <targAmpStep>5</targAmpStep>
+        <behavLimits>[0.7;0.8]</behavLimits>
+        <cueMap>1</cueMap>
+        <visCueBrightness>0.55</visCueBrightness>
+        <visCueRad>90</visCueRad>
+        <margin>20</margin>
+        <numAdjustTrials>8</numAdjustTrials>
+        <retry_WRONG_TARG>0</retry_WRONG_TARG>
+        <retry_NO_CHOICE>0</retry_NO_CHOICE>
+        <interStimulusInterval>[300;310;320;330;340;350;360;370;380;390;400;410;420;430;440;450;460;470;480;490;500]</interStimulusInterval>
+    </params>
+    <randoms>
+        <showHoles>0</showHoles>
+        <preCueFix>400:10:600</preCueFix>
+        <isValid>[ones(1,9), zeros(1,1)]</isValid>
+        <cue>1</cue>
+        <cueAmplitude>[ones(1,8) 0]</cueAmplitude>
+        <oriPick>[1 2]</oriPick>
+        <posPick>[-1 1]</posPick>
+    </randoms>
+</stimulus>

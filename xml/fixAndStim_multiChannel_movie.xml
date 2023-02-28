@@ -1,0 +1,35 @@
+<stimulus name="natural" repeats="200" ex="ex_fixAndStim_multiChannel_movie" bgColor="128 128 128">
+    <params type="movie" runline="movieprefix,suffix numframes dwell startframe centerx centery" movieprefix="example/natural_">
+        <suffix>[11336 32370]</suffix>
+        <numframes>100</numframes>
+        <dwell>4</dwell>
+        <startframe>1</startframe>
+        <centerx>[-4 34 74]</centerx>
+        <centery>[61 1]</centery>        
+        <stimSource>0</stimSource>        
+        <microStimDur>0</microStimDur>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0 0 255]'</fixColor>
+        <timeToFix>1000</timeToFix>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <saccadeLength>150</saccadeLength>
+        <noFixTimeout>1000</noFixTimeout>
+        <fixStaysOn>true</fixStaysOn>
+        <waitForStim>0</waitForStim>
+        <sacCheckTime>0</sacCheckTime>
+        <toneWithStim>0</toneWithStim>
+        <postTrialWait>100</postTrialWait>
+        <xippmexPulseWidth>250</xippmexPulseWidth>
+        <xippmexStimFreq>350</xippmexStimFreq>
+        <xippmexStimDur>150</xippmexStimDur>
+        <xippmexStimAmp>50</xippmexStimAmp>
+    </params>
+    <randoms>
+        <preStimFix>150</preStimFix>
+        <saccadeDir>0:359</saccadeDir>
+    </randoms>
+</stimulus>

@@ -1,0 +1,28 @@
+<stimulus name="natural" repeats="200" ex="ex_hrfStim" bgColor="128 128 128">
+    <params type="movie" runline="movieprefix,suffix numframes dwell startframe centerx centery" movieprefix="example/natural_">
+        <suffix>[11336 11336 11336 11336 11336 11336 11336 11336 11336 11336 12396 12396 12396 12396 12396 12396 12396 12396 12396 12396]</suffix>
+        <blockRandomize>false</blockRandomize>
+        <badTrialHandling>'immediateRetry'</badTrialHandling>
+        <numframes>1</numframes>
+        <dwell>[30]</dwell>
+        <startframe>[1]</startframe>
+        <centerx>[-175]</centerx>
+        <centery>[-120]</centery>
+        <nFlashes>8</nFlashes>
+        <interStimInterval>300</interStimInterval>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <preStimFix>[500]</preStimFix>
+        <timeToFix>1000</timeToFix>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <saccadeLength>150</saccadeLength>
+        <noFixTimeout>1000</noFixTimeout>
+    </params>
+    <randoms>
+        <saccadeDir>0:90:270</saccadeDir>
+    </randoms>
+</stimulus>

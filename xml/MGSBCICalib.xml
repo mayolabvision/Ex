@@ -1,0 +1,104 @@
+<stimulus name="MGSBCI" repeats="40" ex="ex_MGSBCIBlock" bgColor="0 0 0">
+    <params>
+        <distance>[17*16]</distance>
+        <size>30</size>
+        <othercolorflag>[1]</othercolorflag>
+        <sizeOther>[15]</sizeOther>
+        <angle>[0:45:359]</angle>
+        <helperTargetColor>[145 145 145]'</helperTargetColor>
+        <bgColor>[128 128 128]'</bgColor>
+        <allAngles>[0:45:359]'</allAngles>
+        <delayAngle>[-1]</delayAngle>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <targetColor>[255 255 255]'</targetColor>
+        <cursorColor>[210;128; 128]</cursorColor>
+        <targetColorOther>[128 128 128]'</targetColorOther>
+        <annulusColor>[128 210 128]'</annulusColor>
+        <timeToFix>1000</timeToFix>
+        <targetDuration>200</targetDuration>
+        <noFixTimeout>1500</noFixTimeout>
+        <targetOnsetDelay>200</targetOnsetDelay>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>100</stayOnTarget>
+        <bciTargRadx>80</bciTargRadx>
+        <bciTargRady>40</bciTargRady>
+        <bciCursorEnable>0</bciCursorEnable>
+        <bciEnable>1</bciEnable>
+        <bciRewardEnable>0</bciRewardEnable>
+        <updatesOnTarget>2</updatesOnTarget>
+        <cursorSize>50</cursorSize>
+        <bciJuice>1</bciJuice>
+        <saccadeJuice>1</saccadeJuice>
+        <bciSaccadeJuice>1</bciSaccadeJuice>
+        <errorBadHandshakeFlag>0</errorBadHandshakeFlag>
+        <showDelayTargetFlag>1</showDelayTargetFlag>
+        <lowerboundprop>0.1</lowerboundprop>
+        <annulusSizeAtThresh>0.2</annulusSizeAtThresh>
+        <distfunflag>1</distfunflag>
+        <minRxn>0</minRxn>
+        <miniblocksize>10</miniblocksize>
+        <nCueTrials>1</nCueTrials>
+        <Cmax>round(1*17)</Cmax>
+        <cursorRad>10</cursorRad>
+        <noisyCursorDirNoiseFlag>0</noisyCursorDirNoiseFlag>
+        <randomGain>0.1</randomGain>
+        <bciinitblocklength>0</bciinitblocklength>
+        <bciblocklength>1</bciblocklength>
+        <shamblocklength>0</shamblocklength>
+        <bciminiblocktrials>1</bciminiblocktrials>
+        <shamminiblocktrials>0</shamminiblocktrials>
+        <shampossible>1</shampossible>
+        <recalTrial>0</recalTrial>
+        <bciTrial>1</bciTrial>
+        <convergeAnnulus>1</convergeAnnulus>
+        <annulusvisibleflag>1</annulusvisibleflag>
+        <annulusSize> round(2*17)</annulusSize>
+        <annulusThickness>4</annulusThickness>
+        <preBCIDelay>0</preBCIDelay>
+        <postBCIDelay>0</postBCIDelay>
+        <convergeDelay>0</convergeDelay>
+        <noisyAnnulusFlag>0</noisyAnnulusFlag>
+        <feedbackType>['a';'n';'n';'u';'l';'u';'s']</feedbackType>
+        <noFixTimeoutBCI>500</noFixTimeoutBCI>
+        <detectSaccadeFlag>1</detectSaccadeFlag>
+        <countMisses> 0</countMisses>
+        <InterTrialPause>500</InterTrialPause>
+        <noisyFlatTime>1000</noisyFlatTime>
+        <initSinusoidGain>0.2</initSinusoidGain>
+        <noisyFreq1>5</noisyFreq1>
+        <noisyFreq2>10</noisyFreq2>
+        <cursorvisiblecalibflag>0</cursorvisiblecalibflag>
+        <annulusvisiblecalibflag>1</annulusvisiblecalibflag>
+        <autocalibflag>1</autocalibflag>
+        <BCIDistanceThresh>5</BCIDistanceThresh>
+        <numcalibtrials>10000</numcalibtrials>
+        <allowSaccadeRewardFlag>1</allowSaccadeRewardFlag>
+        <annulusTargVisibleFlag>1</annulusTargVisibleFlag>
+        <annulusTargColor>[180 180 180]'</annulusTargColor>
+        <cursorRadOnAnnulus>10</cursorRadOnAnnulus>
+        <replaceSaccWinRadWithAnnulusFlag>0</replaceSaccWinRadWithAnnulusFlag>
+        <replaceFixWinRadWithAnnulusFlag>0</replaceFixWinRadWithAnnulusFlag>
+        <peripheralTargConditionFlag>0</peripheralTargConditionFlag>
+        <numPeripheralConds>0</numPeripheralConds>
+        <blankCursorInFixWinFlag>0</blankCursorInFixWinFlag>
+        <blankRad>1</blankRad>
+        <workspaceMult>[0.75]</workspaceMult>
+        <maxmissesabortCue>5</maxmissesabortCue>
+        <maxCalibCursorGain>0.8</maxCalibCursorGain>
+        <perturbAngle>0</perturbAngle>
+        <blockCueOn>[1 ]</blockCueOn>
+        <peripheralPerturbAngle>0</peripheralPerturbAngle>
+        <randomPerturb>[0]</randomPerturb>
+        <randomPerturbAmount>0</randomPerturbAmount>
+        <newTargWinRad>100</newTargWinRad>
+    </params>
+    <randoms>
+        <randomDirection>[0:45:359]</randomDirection>
+        <fixDuration>[1900:100:2400]</fixDuration>
+        <cursorVisible>[0]</cursorVisible>
+    </randoms>
+</stimulus>                                       
