@@ -325,7 +325,7 @@ else
         disp(['Current session number = ',num2str(params.sessionNumber)]);
     else
         sessionNumberStr = input('Enter the session number:', 's');
-        params.sessionNumber = str2double(sessionNumberStr);
+        params.sessionNumber = sessionNumberStr;
     end
 end
 
@@ -585,7 +585,7 @@ msgAndWait('eval_str addpath(sv.localDir);'); %add the directory to the path on 
 
 %% define default outfile name and turn on/off saving based on input param
 [~,xmlname,~] = fileparts(xmlFile);
-defaultoutfile=[params.SubjectID,'_',datestr(now, 'yyyy.mmm.DD.HH.MM.SS'),'_',xmlname,'.mat'];
+defaultoutfile=[params.SubjectID,'_',params.sessionNumber,'_',datestr(now, 'yyyy.mmm.DD.HH.MM.SS'),'_',xmlname,'.mat'];
 if saveMat
     outfile=defaultoutfile;
     params.writeFile=true;
@@ -665,13 +665,13 @@ wins.eyeDotRad = 5; % radius of eye position dot in pixels
 wins.eyeTraceColor = [255 0 0]; % color of the eye position trace
 wins.eyePosColor = [255 255 255]; % color of the eye position dot
 wins.controlCalibDotRad = 5; % for the experimenter to see in runex
-wins.controlCalibDotColor = [0 0 255];
+wins.controlCalibDotColor = [255 255 255];
 if isfield(params,'calibDotSize') % so user can override voltScaledefault
     wins.displayCalibDotRad = params.calibDotSize;
 else
     wins.displayCalibDotRad = 5; % for the subject to see via showex
 end
-wins.displayCalibDotColor = [0 0 255]; 
+wins.displayCalibDotColor = [255 255 255]; 
 
 % Screen layout for the control display
 cRes = wins.controlResolution;

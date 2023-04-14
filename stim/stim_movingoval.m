@@ -21,16 +21,17 @@ if strcmp(optstr,'setup')
     %            (5) endx position
     %            (6) endy position
     %            (7) speed
-    %            (8) color, R
-    %            (9) color, G
-    %            (10) color, B
-    %            (11) color, alpha   -13/3/19 HS for transparency
+    %            (8) angle
+    %            (9) color, R
+    %            (10) color, G
+    %            (11) color, B
+    %            (12) color, alpha   -13/3/19 HS for transparency
     stimname = mfilename;
     objects{objID} = struct('type',stimname(6:end),'frame',0,'fc',a(1),'x',a(2), ...
-        'y',-a(3),'rad',a(4),'endx',a(5),'endy',a(6),'spd',a(7),'col',a(8:end));
+        'y',-a(3),'rad',a(4),'endx',a(5),'endy',a(6),'spd',a(7), 'ang', a(8),'col',a(9:end));
     % do trig here
-    objects{objID}.xoffsetPerFrame = 50; % hacked, use spd instead
-    objects{objID}.yoffsetPerFrame = 50; % hacked
+    objects{objID}.xoffsetPerFrame = a(7)*27.87*cos(deg2rad(a(8)))/144; % hacked, use spd instead
+    objects{objID}.yoffsetPerFrame = a(7)*27.87*sin(deg2rad(a(8)))/144; % hacked
 elseif strcmp(optstr,'display')
     % SHAWN - put in code that moves the dot to where it should go
     % or, use the .frame variable to figure out targetPos with a bit of
