@@ -1,0 +1,24 @@
+<stimulus name="onlyFixation" repeats="400" ex="ex_onlyFixationAndVis" bgColor="128 128 128">
+    <params>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <timeToFix>1000</timeToFix>
+        <fixDuration>[1000:50:3000]</fixDuration>
+        
+        <angle>[0:45:360]</angle>
+        <distance>[250]</distance>
+        <size>[15]</size>
+        <targetColor>[255;255;255]</targetColor>
+        <targetDuration>75</targetDuration>
+        
+        
+        
+        <noFixTimeout>2000</noFixTimeout>  
+        <InterTrialPause>900</InterTrialPause>
+        
+    </params>  
+    <randoms>
+    </randoms>
+</stimulus>

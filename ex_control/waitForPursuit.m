@@ -1,5 +1,5 @@
-function trialSuccess = waitForMS(waitTime,fixX,fixY,r,varargin)
-% function success = waitForMS(waitTime,fixX,fixY,r)
+function trialSuccess = waitForPursuit(waitTime, pursuitStartTime, startX, startY, pursuitRadius, pursuitSpeed, angle, jumpSize, varargin)
+% function success = waitForPursuit(waitTime,fixX,fixY,r)
 % 
 % ex trial helper function: waits for t ms, checking to ensure that the eye
 % remains within the fixation window.  If time expires, trialSuccess = 1, 
@@ -17,8 +17,9 @@ function trialSuccess = waitForMS(waitTime,fixX,fixY,r,varargin)
 global params;
 
     winColors = [255 255 0];
+    pursuitRadius = pursuitRadius*deg2pix(1); %# of pixels per 1 degree
     recenterFlag = false;
-    if nargin > 4        
+    if nargin > 7        
         vx = 1;
         while vx <= numel(varargin),
             switch class(varargin{vx})
@@ -37,36 +38,55 @@ global params;
     if recenterFlag,
         d=samp;
         eyePos = projectCalibration(d(end,:)); %changed to new project calibration function (supports polynomial regressors) -ACS 29Oct2013
-        fixX = eyePos(1);
-        fixY = eyePos(2); 
+        startX = eyePos(1);
+        startY = eyePos(2); 
 %        fixX = eyePos(1)+fixX; % removed the fixX/Y addition here - that's
 %        not right % MAS Sept2019
 %        fixY = eyePos(2)+fixY; %is the sign here correct? -ACS 14Aug2015
     end;
     
-    if nargin >= 4
-        drawFixationWindows(fixX,fixY,r,winColors);
-    elseif nargin ~=1
-        error('waitForMS can have exactly 1, 4 or 5 input arguments');
+    if nargin >= 7
+%        drawFixationWindows(startX,startY,pursuitRadius,winColors);
+    elseif nargin ~= 7 || nargin ~=8
+        error('waitForPursuit can have exactly 7 or 8  input arguments');
     end
+    
+    % Draw the fixation window
+    time_weight = 0:1/3:1;
+    
+    horz_input = startX + jumpSize*deg2pix(1)*cos(deg2rad(angle)) + pursuitSpeed*deg2pix(1)*cos(deg2rad(angle))*(waitTime/1000)*(time_weight);
+    vert_input = startY + jumpSize*deg2pix(1)*sin(deg2rad(angle)) + pursuitSpeed*deg2pix(1)*sin(deg2rad(angle))*(waitTime/1000)*(time_weight);
+    
+    
+    drawFixationWindows(horz_input, vert_input, ones(1, numel(time_weight))*pursuitRadius, ones(numel(time_weight),1)*winColors)
+    
     
     trialSuccess = 1;
     thisStart = tic;
 
-    if nargin >= 4         
+    if nargin >= 7         
         while (toc(thisStart)*1000) <= waitTime
+            % Create Window
+            xPos = startX + jumpSize*deg2pix(1)*cos(deg2rad(angle)) + pursuitSpeed*deg2pix(1)*cos(deg2rad(angle))*(GetSecs-pursuitStartTime);
+            yPos = startY + jumpSize*deg2pix(1)*sin(deg2rad(angle)) + pursuitSpeed*deg2pix(1)*sin(deg2rad(angle))*(GetSecs-pursuitStartTime);
+            
+%            
+            
+%            trialSuccess = 1;
+            
+            % Eye Stuff
             loopTop = GetSecs;
             d=samp;
             eyePos = projectCalibration(d(end,:)); %changed to new project calibration function (supports polynomial regressors) -ACS 29Oct2013
 
  %           eyePos = eyePos - [fixX fixY];
 
-            relPos = bsxfun(@minus,eyePos(:),[fixX;fixY]); %position relative to each window        
-            switch size(r,1)
+            relPos = bsxfun(@minus,eyePos(:),[xPos;yPos]); %position relative to each window        
+            switch size(pursuitRadius,1)
                 case 1, %circular window        
-                    inWin = sum(relPos.^2,1)<r.^2; 
+                    inWin = sum(relPos.^2,1)<pursuitRadius.^2; 
                 case 2, %rectangular window
-                    inWin = all(abs(relPos)<abs(r),1);
+                    inWin = all(abs(relPos)<abs(pursuitRadius),1);
                 otherwise
                     error('EX:waitForMS:badRadius','Radius must have exactly 1 or 2 rows');
             end;

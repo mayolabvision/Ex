@@ -18,6 +18,8 @@
         <saccadeInitiate>500</saccadeInitiate>
         <saccadeTime>680</saccadeTime>
         <stayOnTarget>150</stayOnTarget>
+        <incorrectTimeout>1000</incorrectTimeout>
+        <delay>20</delay>
         <isi>300</isi>
     </params>
 </stimulus>                    

@@ -1,0 +1,37 @@
+<stimulus name="fixstim" repeats="10" ex="ex_activeFixation" bgColor="128 128 128">
+    <params type="oval" runline="stimLength targXPos targYPos radius colorR colorG colorB">
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0 0 255]'</fixColor>
+        
+        <nStimPerFix>1</nStimPerFix>
+        <stimLength>100</stimLength>
+        <targetColor>[255;255;255]</targetColor>
+        <targXPos>[100, 50, 0, -50, -100]</targXPos>
+        <targYPos>[0, 50, 100, -50, 0]</targYPos>
+        <radius>15</radius>
+        <colorR>255</colorR>
+        <colorG>255</colorG>
+        <colorB>255</colorB>
+        
+        
+        <preStimFix>150</preStimFix>
+        <timeToFix>1000</timeToFix>
+        <noFixTimeout>2000</noFixTimeout>
+        <InterTrialPause>900</InterTrialPause>  
+        
+        
+        <saccadeInitiate>1</saccadeInitiate>
+        <saccadeDir>0</saccadeDir>
+        <saccadeLength>0</saccadeLength>
+        <stayOnTarget>1000</stayOnTarget>
+        
+        <distance>[250]</distance>
+        <angle>[0:45:315]</angle>
+        <size>15</size>
+    </params>
+    <randoms>
+        <fixDuration>[1000:50:3000]</fixDuration>
+    </randoms>
+</stimulus>

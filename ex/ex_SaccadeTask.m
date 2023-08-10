@@ -46,6 +46,11 @@ function result = ex_SaccadeTask(e)
     
     result = 0;
     
+    % Added to allow for onset delays this breaks some of the codes 
+    %%%%% NEED TO FIX BEFORE REAL DATA COLLECTION %%%%%% SMW 2023/07/04
+    e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay); % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
+    
+     
     % take radius and angle and figure out x/y for saccade direction
     theta = deg2rad(e.angle);
     newX = round(e.distance*cos(theta));
@@ -100,7 +105,7 @@ function result = ex_SaccadeTask(e)
                       % I moved this on 03/25/2019 - MAS
     sendCode(codes.FIX_ON);
     
-    if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad);
+    if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad)
         % failed to achieve fixation
         sendCode(codes.IGNORED);
         msgAndWait('all_off');
@@ -111,7 +116,7 @@ function result = ex_SaccadeTask(e)
     end
     sendCode(codes.FIXATE);
     if isfield(e,'fixJuice')
-        if rand < e.fixJuice, giveJuice(1); end;
+        if rand < e.fixJuice, giveJuice(1); end
     end
     
     if ~waitForMS(e.targetOnsetDelay,e.fixX,e.fixY,params.fixWinRad)
@@ -123,7 +128,8 @@ function result = ex_SaccadeTask(e)
         result = codes.BROKE_FIX;
         return;
     end
-    
+   
+      
     % Decision point - is this VisGuided, Delay-VisGuided, or Mem-Guided
     if (e.targetOnsetDelay == e.fixDuration)
         % Visually Guided Saccade
@@ -214,6 +220,7 @@ function result = ex_SaccadeTask(e)
         sendCode(codes.NO_CHOICE);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.NO_CHOICE;
         return;
     end
@@ -231,6 +238,7 @@ function result = ex_SaccadeTask(e)
         sendCode(codes.NO_CHOICE);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.NO_CHOICE;
         return;
     end
@@ -244,6 +252,7 @@ function result = ex_SaccadeTask(e)
         sendCode(codes.BROKE_TARG);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.BROKE_TARG;
         return;
     end

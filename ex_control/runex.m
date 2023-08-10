@@ -346,6 +346,8 @@ try
     exFileText = fscanf(exfid,'%c',inf);
     fclose(exfid);
     
+    
+    
 catch ME
     fprintf(ME.message);
     return;
@@ -364,6 +366,7 @@ switch class(xmlParams.bgColor)
     otherwise
         %do nothing
 end
+
 
 %% opening up chatter with the data computer
 % this needs to happen after the XML params have been loaded for the IP
@@ -619,8 +622,8 @@ params.displayPixelSize = ts{3};
 params.displayHz = ts{4};
 
 %check the display and warn if it is not running at 100 Hz -acs28mar2017
-if params.displayHz~=100
-    ansr = questdlg(sprintf('Display is not running at 100Hz! Do you want to continue with the display at %dHz? (if not, press no or cancel and fix the display)',params.displayHz));
+if params.displayHz~=120
+    ansr = questdlg(sprintf('Display is not running at 120Hz! Do you want to continue with the display at %dHz? (if not, press no or cancel and fix the display)',params.displayHz));
     switch lower(ansr(1))
         case 'y'
             %do nothing
@@ -1061,6 +1064,7 @@ fclose all;
                     end
                     
                     %Scoring:
+                    
                     trialResult(trialResult==1) = codes.CORRECT; %for backwards compatibility -ACS 23Oct2012
                     trialResult(trialResult==2) = codes.BROKE_FIX; %for backwards compatibility
                     trialResult(trialResult==3) = codes.IGNORED; %for backwards compatibility
@@ -1146,7 +1150,7 @@ fclose all;
                     % Can use the behav struct to keep track of behavior if you
                     % like. Contents of behav are user-defined in ex-functions
                     if params.writeFile
-                        save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','-v6'); % '-v6' for speed -MAS 27Feb2016
+                        save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','xmlParams','-v6'); % '-v6' for speed -MAS 27Feb2016
                     end
                     
                     if trialMessage == -1
