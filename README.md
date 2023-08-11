@@ -62,3 +62,5 @@ When you first execute this “runex” command an “exData” directory will b
 <B>Controlling runex</B><BR>
 
 When runex successfully loads and communicates with showex, it will bring up an interface. Keyboard commands indicate your control options. A simple first step is to press ‘m’ to enter “mouse mode”, where the eye position for the task is controlled by the operator’s mouse. Then press ’s’ to start the task. The user interface indicates the valid keystroke options to control runex behavior during the task, and to halt/change/restart the task, and the moving cursors at the top show the raw eye signal input (on the left) and the calibrated eye signal (on the right).<P>
+
+testtest
