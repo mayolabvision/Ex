@@ -1,0 +1,19 @@
+<stimulus repeats="5" ex="ex_FreeViewPic" bgColor="128 128 128">
+    <conditions type="movie" runline="movieprefix,suffix numframes dwell startframe centerx centery" movieprefix="v4fv/otherscenes/other1_">
+        <suffix>[1:351]</suffix>
+        <numframes>[200:100:800]</numframes>
+        <dwell>200</dwell>
+        <startframe>1</startframe>
+        <centerx>0</centerx>
+        <centery>0</centery>
+    </conditions>
+    <params>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRadX>512</fixRadX>
+        <fixRadY>384</fixRadY>
+        <fixWait>2000</fixWait>
+        <breakFixTimeout>2000</breakFixTimeout>
+        <rewardInterval>1000</rewardInterval>
+    </params>
+</stimulus>

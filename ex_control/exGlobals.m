@@ -56,7 +56,7 @@ params.sacWinRad = params.fixWinRad/2;
 % target window (pixels)
 params.targWinRad = 55; %[85;35]; %35
 % diode Location (left/top/right/bottom of diode position)
-params.diodeLoc = [10 10 40 40];
+params.diodeLoc = [0 0 1 1];
 % if > this time elapses between while loop iterations in waitFor, a warning
 % is displayed (to notify us that there are timing issues that may warrant attention)
 params.waitForTolerance = 0.01; % in seconds, so 0.01 = 10 ms

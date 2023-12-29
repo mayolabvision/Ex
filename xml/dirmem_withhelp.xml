@@ -15,6 +15,7 @@
         <targetDuration>200</targetDuration>
         <noFixTimeout>1000</noFixTimeout>
         <targetOnsetDelay>100</targetOnsetDelay>
+        <targWinRadScale>[0.375]</targWinRadScale>
         <saccadeInitiate>500</saccadeInitiate>
         <saccadeTime>680</saccadeTime>
         <stayOnTarget>150</stayOnTarget>

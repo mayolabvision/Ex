@@ -31,7 +31,7 @@ function runex(xmlFile,varargin)
 % 22Nov19 by MAS/XZ - new version, github release work
 
 %% Can uncomment this if you want to speed up PTB startup (but has a risk if any system software/hardware changes)
-Screen('Preference', 'SkipSyncTests', 1);
+Screen('Preference', 'SkipSyncTests', 0);
 
 %% initialize global variables
 clear global behav allCodes params;

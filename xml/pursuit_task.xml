@@ -10,7 +10,7 @@
         <timeToFix>1000</timeToFix>
         <targetDuration>1500</targetDuration>
         <pursuitDuration>1500</pursuitDuration>
-        <pursuitRadius>10</pursuitRadius>
+        <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle -->
         <noFixTimeout>2000</noFixTimeout>
         <targetOnsetDelay>200</targetOnsetDelay>
         <saccadeInitiate>5000</saccadeInitiate>

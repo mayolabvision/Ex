@@ -153,7 +153,7 @@ function result = ex_SaccadeTask(e)
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
-            waitForMS(e.noFixTimeout);
+            waitForMS(2500);
             result = codes.BROKE_FIX;
             return;
         end
@@ -167,7 +167,7 @@ function result = ex_SaccadeTask(e)
             sendCode(codes.BROKE_FIX);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
-            waitForMS(e.noFixTimeout);
+            waitForMS(2500);
             result = codes.BROKE_FIX;
             return;
         end
@@ -229,11 +229,22 @@ function result = ex_SaccadeTask(e)
 
     if isfield(e,'helperTargetColor')
         %% turn on a target for guidance if 'helperTargetColor' param is present
-        msg('obj_on 3');
-        sendCode(codes.TARG_ON);
+        if isfield(e, 'helperTargetRatio')
+            % turn on a helper in a defined ration of trials
+            if rand < e.helperTargetRatio
+                msg('obj_on 3')
+                sendCode(codes.TARG_ON);
+            end
+        else
+            msg('obj_on 3');
+            sendCode(codes.TARG_ON);
+        end
     end
     
-    if ~waitForFixation(e.saccadeTime,newX,newY,params.targWinRad)
+    
+    targetWindowRadius = round(e.targWinRadScale*e.distance);
+    
+    if ~waitForFixation(e.saccadeTime,newX,newY,targetWindowRadius)
         % didn't reach target
         sendCode(codes.NO_CHOICE);
         msgAndWait('all_off');
@@ -247,7 +258,7 @@ function result = ex_SaccadeTask(e)
     sendCode(codes.ACQUIRE_TARG);
     
     
-    if ~waitForMS(e.stayOnTarget,newX,newY,params.targWinRad)
+    if ~waitForMS(e.stayOnTarget,newX,newY,targetWindowRadius)
         % didn't stay on target long enough
         sendCode(codes.BROKE_TARG);
         msgAndWait('all_off');
