@@ -891,6 +891,9 @@ end
 
 %% Clean up on exit:
 
+% clear persistent variables
+clear( xmlParams.exFileName )
+
 % Reset Priority and Verbosity, close sound
 cleanUp();
 
