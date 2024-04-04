@@ -13,34 +13,32 @@ global objects;
 global sv;
 
 if strcmp(optstr,'setup')
-    a = sscanf(arg,'%i %i %i %i %i %i %i %i %i %i');
+    a = sscanf(arg,'%i %i %i %i %i %i %i %i %i %i %f');
     % arguments: (1) frameCount
     %            (2) startx position
     %            (3) starty position
     %            (4) radius
-    %            (5) speed
-    %            (6) angle
-    %            (7) jumpSize
-    %            (8) color, R
-    %            (9) color, G
-    %            (10) color, B
+    %            (5) endx position
+    %            (6) endy position
+    %            (7) speed
+    %            (8) angle
+    %            (9) color, R
+    %            (10) color, G
+    %            (11) color, B
+    %            (12) color, alpha   -13/3/19 HS for transparency
     stimname = mfilename;
     objects{objID} = struct('type',stimname(6:end),'frame',0,'fc',a(1),'x',a(2), ...
-        'y',-a(3),'rad',a(4),'spd',a(5), 'ang', a(6), 'jump', a(7), 'col',a(8:end));
-    % Frame by Frame offset
-    objects{objID}.xoffsetPerFrame = a(5)*sv.ppd*cos(deg2rad(a(6)))/round(1/sv.ifi); % spd (Pixels per second) * Pix2Deg(#  pixels in 1 deg vis ang) *cos(ang (radians))/FrameRate (Hz)
-    objects{objID}.yoffsetPerFrame = -1*(a(5)*sv.ppd*sin(deg2rad(a(6)))/round(1/sv.ifi)); % spd*Pix2Deg*sin(ang)/FrameRate) % -1 to flip for PTB vs Ex vertical 
-
-    % Jump around fixation
-    objects{objID}.startX = a(2) + a(7)*sv.ppd*cos(deg2rad(a(6)));
-    objects{objID}.startY = -1*(a(3) + a(7)*sv.ppd*sin(deg2rad(a(6))));
-    
+        'y',-a(3),'rad',a(4),'endx',a(5),'endy',a(6),'spd',a(7), 'ang', a(8),'col',a(9:end));
+    % do trig here
+    objects{objID}.xoffsetPerFrame = a(7)*27.87*cos(deg2rad(a(8)))/144; % hacked, use spd instead
+    objects{objID}.yoffsetPerFrame = a(7)*27.87*sin(deg2rad(a(8)))/144; % hacked
 elseif strcmp(optstr,'display')
     % SHAWN - put in code that moves the dot to where it should go
-    % or, use the .frame variable to figure out targetPos with a bit of code
+    % or, use the .frame variable to figure out targetPos with a bit of
+    % code
     %    targetPos = [sv.midScreen + [objects{objID}.x objects{objID}.y] - objects{objID}.rad,sv.midScreen + [objects{objID}.x objects{objID}.y] + objects{objID}.rad];
-    newx = objects{objID}.startX + objects{objID}.xoffsetPerFrame * objects{objID}.frame; % objects{objID}.jump * cos(deg2rad(a(6)) +
-    newy = objects{objID}.startY + objects{objID}.yoffsetPerFrame * objects{objID}.frame; % objects{objID}.jump * sin(deg2rad(a(6)) +
+    newx = objects{objID}.x+objects{objID}.xoffsetPerFrame*objects{objID}.frame;
+    newy = objects{objID}.y+objects{objID}.yoffsetPerFrame*objects{objID}.frame;
     % need a little more logic to get this dot to stop moving
     
     targetPos = [sv.midScreen + [newx newy] - objects{objID}.rad,sv.midScreen + [newx newy] + objects{objID}.rad];
