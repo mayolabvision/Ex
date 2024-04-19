@@ -1,3 +1,11 @@
+### Task codes
+* BACK_STEP
+* NO_STEP
+* FORW_STEP
+
+### Behavioral codes
+* BREAK_PURSUIT
+
 —— <BR>
 <B>Ex - Smith Lab Experimental Software</B><BR>
 
