@@ -1,6 +1,6 @@
 <stimulus name="fixAndStim" repeats="20" ex="ex_fixAndStim" bgColor="64 64 64">
     <params>
-        <microStimDur>1</microStimDur>
+        <microStimDur>100</microStimDur>
     
         <fixX>0</fixX>
         <fixY>0</fixY>
