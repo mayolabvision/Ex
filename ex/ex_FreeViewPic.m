@@ -10,15 +10,9 @@ function result = ex_FreeViewPic(e)
 % NAMES: all the parameters listed in runline
 % type: the type of stimulus (e.g. fef_dots,oval,etc)
 % timeToFix: the number of ms to wait for initial fixation
-% saccadeInitiate: maximum time allowed to leave fixation window
-% saccadeTime: maximum time allowed to reach target
-% preStimFix: time after fixation pt onset before stim onset
-% stayOnTarget: time after reaching target that subject must stay in window
-% saccadeLength: distance of target from fixation
 % noFixTimeout: time after breaking fixation before next trial can begin
 % fixX, fixY, fixRad: fixation spot location in X and Y as well as RGB
 %   color
-% saccadeDir: angle of target to fixation, usually set with a random
 %
 % Last modified:
 % 2012/10/22 by Adam Snyder - support multiple stimuli per fixation
@@ -27,7 +21,7 @@ function result = ex_FreeViewPic(e)
 
     global params codes behav;   
   
-    e = e(1); %in case more than one 'trial' is passed at a time...
+    e = e(1) %in case more than one 'trial' is passed at a time...
     
     objID = 1;
     
