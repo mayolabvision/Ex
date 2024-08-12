@@ -52,7 +52,8 @@ function result = ex_SaccadeTask(e)
     if e.stimType == 2001 % visually-guided saccade
         e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
     elseif e.stimType == 2002 % memory-guided saccade
-        e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
+        e.fixDuration = e.targetOnsetDelay + (e.targetDuration + e.delay);
+        %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
     else % delayed visually-guided saccade
         e.targetOnsetDelay = e.fixDuration - e.delay;
     end
