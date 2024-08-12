@@ -13,7 +13,7 @@ global objects;
 global sv;
 
 if strcmp(optstr,'setup')
-    a = sscanf(arg,'%i %i %i %i %i %i %i %i %i %i');
+    a = sscanf(arg,'%i %i %i %i %i %i %f %i %i %i');
     % arguments: (1) frameCount
     %            (2) startx position
     %            (3) starty position
@@ -28,9 +28,9 @@ if strcmp(optstr,'setup')
     objects{objID} = struct('type',stimname(6:end),'frame',0,'fc',a(1),'x',a(2), ...
         'y',-a(3),'rad',a(4),'spd',a(5), 'ang', a(6), 'jump', a(7), 'col',a(8:end));
     % Frame by Frame offset
-    objects{objID}.xoffsetPerFrame = a(5)*sv.ppd*cos(deg2rad(a(6)))/round(1/sv.ifi); % spd (Pixels per second) * Pix2Deg(#  pixels in 1 deg vis ang) *cos(ang (radians))/FrameRate (Hz)
+    objects{objID}.xoffsetPerFrame = a(5)*sv.ppd*cos(deg2rad(a(6)))/round(1/sv.ifi); % spd (Degrees per second) * Pix2Deg(#  pixels in 1 deg vis ang) *cos(ang (radians))/FrameRate (Hz)
     objects{objID}.yoffsetPerFrame = -1*(a(5)*sv.ppd*sin(deg2rad(a(6)))/round(1/sv.ifi)); % spd*Pix2Deg*sin(ang)/FrameRate) % -1 to flip for PTB vs Ex vertical 
-
+    
     % Jump around fixation
     objects{objID}.startX = a(2) + a(7)*sv.ppd*cos(deg2rad(a(6)));
     objects{objID}.startY = -1*(a(3) + a(7)*sv.ppd*sin(deg2rad(a(6))));
