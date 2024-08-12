@@ -18,6 +18,10 @@ result = 0;
 %     newX = round(e.distance*cos(theta));
 %     newY = round(e.distance*sin(theta));
 
+% Find Jumpsize
+
+e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
+
 % Find endpoint
 
 x_endpoint = round(e.fixX + e.jumpSize*deg2pix(1)*cos(deg2rad(e.angle)) + e.pursuitSpeed*deg2pix(1)*cos(deg2rad(e.angle))*((e.pursuitDuration+100)/1000));
@@ -25,7 +29,7 @@ y_endpoint = round(e.fixY + e.jumpSize*deg2pix(1)*sin(deg2rad(e.angle)) + e.purs
 
 % obj 1 is fix pt, obj 2 is target, diode attached to obj 2
 msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
-msg('set 2 movingoval 0 %i %i %i %i %i %i %i %i %i',[e.fixX e.fixY e.size e.pursuitSpeed e.angle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
+msg('set 2 movingoval 0 %i %i %i %i %i %f %i %i %i',[e.fixX e.fixY e.size e.pursuitSpeed e.angle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
 msg('set 3 oval 0 %i %i %i %i %i %i',[x_endpoint y_endpoint e.size e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
 msg(['diode ' num2str(objID)]);
 

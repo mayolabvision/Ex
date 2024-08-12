@@ -48,8 +48,14 @@ function result = ex_SaccadeTask(e)
     
     % Added to allow for onset delays this breaks some of the codes 
     %%%%% NEED TO FIX BEFORE REAL DATA COLLECTION %%%%%% SMW 2023/07/04
-    e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay); % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
-    
+    % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
+    if e.stimType == 2001 % visually-guided saccade
+        e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
+    elseif e.stimType == 2002 % memory-guided saccade
+        e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
+    else % delayed visually-guided saccade
+        e.targetOnsetDelay = e.fixDuration - e.delay;
+    end
      
     % take radius and angle and figure out x/y for saccade direction
     theta = deg2rad(e.angle);

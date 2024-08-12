@@ -1,6 +1,6 @@
 <stimulus name="pursuittuning" repeats="400" ex="ex_PursuitTask" bgColor="128 128 128">
     <params>
-        <distance>[171]</distance>
+        <reactionTime>110</reactionTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
         <size>5</size>
         <fixX>0</fixX>
         <fixY>0</fixY>
@@ -9,7 +9,7 @@
         <targetColor>[255;0;100]</targetColor>
         <timeToFix>1000</timeToFix>
         <targetDuration>1500</targetDuration>
-        <pursuitDuration>1500</pursuitDuration>
+        <pursuitDuration>1000</pursuitDuration>
         <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle -->
         <noFixTimeout>2000</noFixTimeout>
         <targetOnsetDelay>200</targetOnsetDelay>
@@ -21,6 +21,6 @@
     <randoms>
         <pursuitSpeed>[5 10 20]</pursuitSpeed>
         <angle>[0:45:315]</angle>
-        <jumpSize>[-4 0 4] </jumpSize>
+        <jump>[-1 0 1] </jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
     </randoms>
 </stimulus>                                       
