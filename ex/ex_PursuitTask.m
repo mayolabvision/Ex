@@ -86,7 +86,7 @@ sendCode(codes.TARG_OFF);
 msgAndWait('obj_on 3')
 sendCode(codes.TARG3_ON);
 
-if ~waitForMS(e.stayOnTarget, x_endpoint, y_endpoint, params.fixWinRad)
+if ~waitForMS(e.stayOnTarget, x_endpoint, y_endpoint, params.fixWinRad*2)
     % hold fixation before stimulus comes on
     sendCode(codes.BROKE_TARG);
     msgAndWait('all_off');
