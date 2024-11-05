@@ -12,6 +12,7 @@
         <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle -->
         <noFixTimeout>2000</noFixTimeout>
         <stayOnTarget>1500</stayOnTarget>
+        <endPursuitWinScale>1</endPursuitWinScale>
         
         <fixDuration>[850]</fixDuration>
     
