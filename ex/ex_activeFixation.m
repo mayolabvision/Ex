@@ -203,7 +203,7 @@ function result = ex_activeFixation(e)
         if numel(result)==1
             result = codes.CORRECT;
         else
-            result = [result codes.CORRECT];
+            result = [result(1:end-1) codes.CORRECT];
         end;
     end
    
