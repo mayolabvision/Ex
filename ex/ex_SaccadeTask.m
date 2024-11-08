@@ -168,6 +168,8 @@ function result = ex_SaccadeTask(e)
         msgAndWait('obj_off 2');
         sendCode(codes.TARG_OFF);
         
+        % this makes no sense - why not just use the delay parameter - it
+        % is the missing term to find fixDuration
         waitRemainder = e.fixDuration - (e.targetOnsetDelay + e.targetDuration);
         if ~waitForMS(waitRemainder,e.fixX,e.fixY,params.fixWinRad)
             % didn't hold fixation during period after target offset
