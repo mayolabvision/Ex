@@ -21,6 +21,8 @@
         <stayOnTarget>250</stayOnTarget>
         <saccadeLength>150</saccadeLength>
         <noFixTimeout>1000</noFixTimeout>
+        
+        <InterTrialPause>325</InterTrialPause>
     </params>
     <randoms>
         <saccadeDir>0:45:315</saccadeDir>

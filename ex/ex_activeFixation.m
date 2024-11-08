@@ -214,6 +214,6 @@ function result = ex_activeFixation(e)
     sendCode(codes.REWARD);
     giveJuice();
 
-    if isfield(e,'InterTrialPause')
-        waitForMS(e.InterTrialPause); 
+    if isfield(e(1),'InterTrialPause')
+        waitForMS(e(1).InterTrialPause); 
     end
