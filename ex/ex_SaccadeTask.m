@@ -49,14 +49,18 @@ function result = ex_SaccadeTask(e)
     % Added to allow for onset delays this breaks some of the codes 
     %%%%% NEED TO FIX BEFORE REAL DATA COLLECTION %%%%%% SMW 2023/07/04
     % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
-    if e.stimType == 2001 % visually-guided saccade
-        e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
-    elseif e.stimType == 2002 % memory-guided saccade
-        e.fixDuration = e.targetOnsetDelay + (e.targetDuration + e.delay);
-        %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
-    else % delayed visually-guided saccade
-        e.targetOnsetDelay = e.fixDuration - e.delay;
-    end
+%     if e.stimType == 2001 % visually-guided saccade
+%         e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
+%     elseif e.stimType == 2002 % memory-guided saccade
+%         e.fixDuration = e.targetOnsetDelay + (e.targetDuration + e.delay);
+%         %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
+%     else % delayed visually-guided saccade
+%         e.targetOnsetDelay = e.fixDuration - e.delay;
+%     end
+
+    % Reverting to previous format, as I've been advised to avoid code 
+    % changes without prior approval. KK Noneman 2024/11/09
+    e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
      
     % take radius and angle and figure out x/y for saccade direction
     theta = deg2rad(e.angle);
@@ -168,10 +172,7 @@ function result = ex_SaccadeTask(e)
         msgAndWait('obj_off 2');
         sendCode(codes.TARG_OFF);
         
-        % this makes no sense - why not just use the delay parameter - it
-        % is the missing term to find fixDuration
-        waitRemainder = e.fixDuration - (e.targetOnsetDelay + e.targetDuration);
-        if ~waitForMS(waitRemainder,e.fixX,e.fixY,params.fixWinRad)
+        if ~waitForMS(e.delay,e.fixX,e.fixY,params.fixWinRad)
             % didn't hold fixation during period after target offset
             sendCode(codes.BROKE_FIX);
             msgAndWait('all_off');
