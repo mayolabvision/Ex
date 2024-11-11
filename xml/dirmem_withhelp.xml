@@ -3,6 +3,7 @@
         <distance>[171]</distance>
         <angle>[0:45:315]</angle>
         <size>15</size>
+        <stimType>2002</stimType>
     
         <fixX>0</fixX>
         <fixY>0</fixY>
