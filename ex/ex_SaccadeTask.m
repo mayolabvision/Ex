@@ -58,8 +58,7 @@ function result = ex_SaccadeTask(e)
 %         e.targetOnsetDelay = e.fixDuration - e.delay;
 %     end
 
-    % Reverting to previous format, as I've been advised to avoid code 
-    % changes without prior approval. KK Noneman 2024/11/09
+    % Back to version before temporary change. KK Noneman 2024/11/09
     e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
      
     % take radius and angle and figure out x/y for saccade direction
@@ -171,7 +170,8 @@ function result = ex_SaccadeTask(e)
         
         msgAndWait('obj_off 2');
         sendCode(codes.TARG_OFF);
-        
+       
+        % removed additional waitRemainder calculation here	
         if ~waitForMS(e.delay,e.fixX,e.fixY,params.fixWinRad)
             % didn't hold fixation during period after target offset
             sendCode(codes.BROKE_FIX);
