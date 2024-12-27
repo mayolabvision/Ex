@@ -68,13 +68,13 @@ end
 msgAndWait('obj_switch -1 2');
 pursuitStartTime = GetSecs;
 sendCode(codes.FIX_OFF);
-sendCode(codes.TARG_ON);
+sendCode(codes.PURSUIT_TARG);
 
 if ~waitForPursuit(e.pursuitDuration, pursuitStartTime, e.fixX,e.fixY, e.pursuitRadius, e.pursuitSpeed, e.angle, e.jumpSize)
     % keep eye positionon target
-    sendCode(codes.BROKE_TARG);
+    sendCode(codes.BROKE_PURSUIT);
     msgAndWait('all_off');
-    sendCode(codes.TARG_OFF);
+    sendCode(12697); % Custom code PURSUIT_TARG_OFF - for pursuit target offset
     waitForMS(e.noFixTimeout);
     result = codes.BROKE_TARG;
     return;
@@ -82,7 +82,7 @@ end
 
 % turn target off and turn on fixation target
 msgAndWait('obj_off 2')
-sendCode(codes.TARG_OFF);
+sendCode(12697); % Custom code PURSUIT_TARG_OFF - for pursuit target offset
 msgAndWait('obj_on 3')
 sendCode(codes.TARG3_ON);
 

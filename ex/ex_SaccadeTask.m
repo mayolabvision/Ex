@@ -163,7 +163,7 @@ function result = ex_SaccadeTask(e)
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
-            waitForMS(2500);
+            waitForMS(2500); % Why do we have a 2.5s timeout here as opposed to defining it in a parameter?
             result = codes.BROKE_FIX;
             return;
         end
@@ -177,7 +177,7 @@ function result = ex_SaccadeTask(e)
             sendCode(codes.BROKE_FIX);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
-            waitForMS(2500);
+            waitForMS(2500); % Why do we have a 2.5s timeout here as opposed to defining it in a parameter?
             result = codes.BROKE_FIX;
             return;
         end
@@ -272,7 +272,7 @@ function result = ex_SaccadeTask(e)
         % didn't stay on target long enough
         sendCode(codes.BROKE_TARG);
         msgAndWait('all_off');
-        sendCode(codes.FIX_OFF);
+        sendCode(codes.FIX_OFF); 
         waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.BROKE_TARG;
         return;
