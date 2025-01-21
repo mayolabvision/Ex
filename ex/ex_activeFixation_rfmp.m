@@ -1,4 +1,4 @@
-function result = ex_activeFixation(e)
+function result = ex_activeFixation_rfmp(e)
 % ex file: ex_activeFixation
 %
 % Active fixation tasks for any stimuli
