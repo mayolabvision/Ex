@@ -1,0 +1,28 @@
+<stimulus name="dotmapping" repeats="1000" ex="ex_activeFixation_rfmp" bgColor="0 0 0">
+    <params type="oval" runline="frameCount xpos ypos dotrad colorR colorG colorB">
+        <frameCount>20</frameCount>
+        <xpos>-448:128:448</xpos>
+        <ypos>-320:128:320</ypos>
+        <dotrad>64</dotrad>
+        <colorR>255</colorR>
+        <colorG>255</colorG>
+        <colorB>255</colorB>
+    
+        <nStimPerFix>11</nStimPerFix>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>6</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <preStimFix>200</preStimFix>
+        <interStimInterval>0</interStimInterval>
+        <timeToFix>1000</timeToFix>
+        <saccadeInitiate>0</saccadeInitiate>
+        <saccadeTime>200</saccadeTime>
+        <stayOnTarget>200</stayOnTarget>
+        <saccadeLength>1</saccadeLength>
+        <noFixTimeout>600</noFixTimeout>
+        
+        <InterTrialPause>0</InterTrialPause>
+        <saccadeDir>0</saccadeDir>
+    </params>
+</stimulus>
