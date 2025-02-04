@@ -42,7 +42,8 @@ function result = ex_SaccadeTask_varDelays(e)
 % sllowing for variable fixDurations and added incorrectTimeout
 %
 % 2024/02/03 by Kendra Noneman - added "stimType" to xml to force saccade type
-% and allow for variable timing across all saccade types 
+% and allow for variable timing across all saccade types, calculate fixDuration
+% instead of targetOnsetDelay for simpler calculations
 % 
     global params codes behav;
 
