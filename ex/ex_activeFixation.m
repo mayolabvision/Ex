@@ -24,6 +24,8 @@ function result = ex_activeFixation(e)
 % 2012/10/22 by Adam Snyder - support multiple stimuli per fixation
 % 2016/03/16 by Matt Smith - cleanup of option for no saccade, proper
 % sending of results codes, add optional interTrialPause after
+% 2025/02/03 by KK Noneman - fixed interTrialPause to grab only 
+% one value from e, fixed result array for saccadeInitiate==0
 %
 
     global params codes behav;   

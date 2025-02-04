@@ -278,7 +278,7 @@ if makeDir
             mkdir(params.localExDir,'xml');
             mkdir(params.localExDir,'user');
             mkdir(params.localExDir,'control');
-            mkdir(params.localExDir,'disDATAFILEplay');
+            mkdir(params.localExDir,'display');
         else
             disp('Ex_local folder and subfolders are required to run.');
             return;
