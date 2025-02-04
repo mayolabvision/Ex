@@ -1,4 +1,4 @@
-function result = ex_SaccadeTask(e)
+function result = ex_SaccadeTask_varDelays(e)
 % ex file: ex_SaccadeTask
 %
 % Uses codes in the 2000s range to indicate stimulus types
