@@ -20,7 +20,7 @@ result = 0;
 
 % Find Jumpsize
 
-e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
+e.jumpSize = (e.crossingTime/1000)*e.pursuitSpeed*e.jump;
 
 % Find endpoint
 

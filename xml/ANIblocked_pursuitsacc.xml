@@ -31,7 +31,7 @@
         <isi>300</isi>
         
         <!--Pursuit-specific parameters-->
-        <reactionTime>110</reactionTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
+        <crossingTime>110</crossingTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
         <pursuit_size>5</pursuit_size>
         
         <pursuitDuration>900</pursuitDuration>

@@ -1,6 +1,6 @@
 <stimulus name="pursuittuning" repeats="400" ex="ex_AniPursuitTask" bgColor="128 128 128">
     <params>
-        <reactionTime>110</reactionTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
+        <crossingTime>110</crossingTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
         <pursuit_size>5</pursuit_size>
         <nextAngle>[ones(100,1)*45 ; ones(100,1)*-45 ; ones(100,1)*180]'</nextAngle>
         <fixX>0</fixX>
