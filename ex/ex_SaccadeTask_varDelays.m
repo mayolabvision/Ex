@@ -46,6 +46,21 @@ function result = ex_SaccadeTask(e)
     
     result = 0;
     
+    % Added to allow for onset delays this breaks some of the codes 
+    %%%%% NEED TO FIX BEFORE REAL DATA COLLECTION %%%%%% SMW 2023/07/04
+    % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
+    if e.stimType == 2001 % visually-guided saccade
+        e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
+    elseif e.stimType == 2002 % memory-guided saccade
+        e.fixDuration = e.targetOnsetDelay + (e.targetDuration + e.delay);
+        %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
+    else % delayed visually-guided saccade
+        e.targetOnsetDelay = e.fixDuration - e.delay;
+    end
+
+    % Back to version before temporary change. KK Noneman 2024/11/09
+    %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
+     
     % take radius and angle and figure out x/y for saccade direction
     theta = deg2rad(e.angle);
     newX = round(e.distance*cos(theta));
@@ -100,7 +115,7 @@ function result = ex_SaccadeTask(e)
                       % I moved this on 03/25/2019 - MAS
     sendCode(codes.FIX_ON);
     
-    if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad);
+    if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad)
         % failed to achieve fixation
         sendCode(codes.IGNORED);
         msgAndWait('all_off');
@@ -111,7 +126,7 @@ function result = ex_SaccadeTask(e)
     end
     sendCode(codes.FIXATE);
     if isfield(e,'fixJuice')
-        if rand < e.fixJuice, giveJuice(1); end;
+        if rand < e.fixJuice, giveJuice(1); end
     end
     
     if ~waitForMS(e.targetOnsetDelay,e.fixX,e.fixY,params.fixWinRad)
@@ -123,7 +138,8 @@ function result = ex_SaccadeTask(e)
         result = codes.BROKE_FIX;
         return;
     end
-    
+   
+      
     % Decision point - is this VisGuided, Delay-VisGuided, or Mem-Guided
     if (e.targetOnsetDelay == e.fixDuration)
         % Visually Guided Saccade
@@ -147,21 +163,21 @@ function result = ex_SaccadeTask(e)
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
-            waitForMS(e.noFixTimeout);
+            waitForMS(2500); % Why do we have a 2.5s timeout here as opposed to defining it in a parameter?
             result = codes.BROKE_FIX;
             return;
         end
         
         msgAndWait('obj_off 2');
         sendCode(codes.TARG_OFF);
-        
-        waitRemainder = e.fixDuration - (e.targetOnsetDelay + e.targetDuration);
-        if ~waitForMS(waitRemainder,e.fixX,e.fixY,params.fixWinRad)
+       
+        % removed additional waitRemainder calculation here	
+        if ~waitForMS(e.delay,e.fixX,e.fixY,params.fixWinRad)
             % didn't hold fixation during period after target offset
             sendCode(codes.BROKE_FIX);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
-            waitForMS(e.noFixTimeout);
+            waitForMS(2500); % Why do we have a 2.5s timeout here as opposed to defining it in a parameter?
             result = codes.BROKE_FIX;
             return;
         end
@@ -214,6 +230,7 @@ function result = ex_SaccadeTask(e)
         sendCode(codes.NO_CHOICE);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.NO_CHOICE;
         return;
     end
@@ -222,15 +239,27 @@ function result = ex_SaccadeTask(e)
 
     if isfield(e,'helperTargetColor')
         %% turn on a target for guidance if 'helperTargetColor' param is present
-        msg('obj_on 3');
-        sendCode(codes.TARG_ON);
+        if isfield(e, 'helperTargetRatio')
+            % turn on a helper in a defined ration of trials
+            if rand < e.helperTargetRatio
+                msg('obj_on 3')
+                sendCode(codes.TARG_ON);
+            end
+        else
+            msg('obj_on 3');
+            sendCode(codes.TARG_ON);
+        end
     end
     
-    if ~waitForFixation(e.saccadeTime,newX,newY,params.targWinRad)
+    
+    targetWindowRadius = round(e.targWinRadScale*e.distance);
+    
+    if ~waitForFixation(e.saccadeTime,newX,newY,targetWindowRadius)
         % didn't reach target
         sendCode(codes.NO_CHOICE);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.NO_CHOICE;
         return;
     end
@@ -239,11 +268,12 @@ function result = ex_SaccadeTask(e)
     sendCode(codes.ACQUIRE_TARG);
     
     
-    if ~waitForMS(e.stayOnTarget,newX,newY,params.targWinRad)
+    if ~waitForMS(e.stayOnTarget,newX,newY,targetWindowRadius)
         % didn't stay on target long enough
         sendCode(codes.BROKE_TARG);
         msgAndWait('all_off');
-        sendCode(codes.FIX_OFF);
+        sendCode(codes.FIX_OFF); 
+        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
         result = codes.BROKE_TARG;
         return;
     end
@@ -258,3 +288,4 @@ function result = ex_SaccadeTask(e)
     if isfield(e,'InterTrialPause')
         waitForMS(e.InterTrialPause); %this was for Wile E to lengthen time between trials SBK
     end
+    
