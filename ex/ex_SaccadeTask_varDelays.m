@@ -41,7 +41,7 @@ function result = ex_SaccadeTask_varDelays(e)
 % 2023/06/16 by SM Willett - made targetOnsetDelay a function of fixationDuration
 % sllowing for variable fixDurations and added incorrectTimeout
 %
-% 2024/02/03 by Kendra Noneman - added "stimType" to xml to force saccade type
+% 2025/02/03 by Kendra Noneman - added "stimType" to xml to force saccade type
 % and allow for variable timing across all saccade types, calculate fixDuration
 % instead of targetOnsetDelay for simpler calculations
 % 
