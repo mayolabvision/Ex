@@ -1,5 +1,5 @@
 function result = ex_SaccadeTask_varDelays(e)
-% ex file: ex_SaccadeTask
+% ex file: ex_SaccadeTask_varDelays
 %
 % Uses codes in the 2000s range to indicate stimulus types
 % 2001 - visually guided saccade
@@ -15,8 +15,8 @@ function result = ex_SaccadeTask_varDelays(e)
 % targetColor: a 3 element [R G B] vector for the target color
 % timeToFix: time in ms for initial fixation
 % noFixTimeout: timeout punishment for aborted trial (ms)
+% incorrectTimeout: timeout punishment for incorrect trial (ms)
 % targetOnsetDelay: time after fixation before target appears
-% fixDuration: length of initial fixation required
 % targetDuration: duration that target is on screen
 % stayOnTarget: length of target fixation required
 % saccadeInitiate: maximum time allowed to leave fixation window
@@ -38,6 +38,12 @@ function result = ex_SaccadeTask_varDelays(e)
 %
 % 2015/08/14 by Matt Smith - added recentering when detecting saccade
 %
+% 2023/06/16 by SM Willett - made targetOnsetDelay a function of fixationDuration
+% sllowing for variable fixDurations and added incorrectTimeout
+%
+% 2024/02/03 by Kendra Noneman - added "stimType" to xml to force saccade type
+% and allow for variable timing across all saccade types 
+% 
     global params codes behav;
 
     e = e(1); %in case more than one 'trial' is passed at a time...
@@ -45,22 +51,16 @@ function result = ex_SaccadeTask_varDelays(e)
     objID = 2;
     
     result = 0;
-    
-    % Added to allow for onset delays this breaks some of the codes 
-    %%%%% NEED TO FIX BEFORE REAL DATA COLLECTION %%%%%% SMW 2023/07/04
-    % To have targetonsetdelay be a function of fixation duration - allows for variable fixdurations. SM Willett 2023/06/16
+   
+    % Forces saccade type right away, allowing for more flexible timings
     if e.stimType == 2001 % visually-guided saccade
-        e.targetOnsetDelay = e.fixDuration; % This is a very temporary "cheat" to have VGS with variable fixations. KK Noneman 2024/06/03   
+        e.fixDuration = e.targetOnsetDelay; 
     elseif e.stimType == 2002 % memory-guided saccade
         e.fixDuration = e.targetOnsetDelay + (e.targetDuration + e.delay);
-        %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
     else % delayed visually-guided saccade
-        e.targetOnsetDelay = e.fixDuration - e.delay;
+        e.fixDuration = e.targetOnsetDelay + e.delay;
     end
 
-    % Back to version before temporary change. KK Noneman 2024/11/09
-    %e.targetOnsetDelay = e.fixDuration - (e.targetDuration + e.delay);
-     
     % take radius and angle and figure out x/y for saccade direction
     theta = deg2rad(e.angle);
     newX = round(e.distance*cos(theta));
@@ -273,7 +273,7 @@ function result = ex_SaccadeTask_varDelays(e)
         sendCode(codes.BROKE_TARG);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF); 
-        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
+        waitForMS(e.incorrectTimeout) 
         result = codes.BROKE_TARG;
         return;
     end

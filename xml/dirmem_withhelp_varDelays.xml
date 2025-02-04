@@ -12,7 +12,6 @@
         <targetColor>[255;255;255]</targetColor>
         <helperTargetColor>[0;0;255]</helperTargetColor>
         <timeToFix>1000</timeToFix>
-        <fixDuration>800</fixDuration>
         <targetDuration>200</targetDuration>
         <noFixTimeout>1000</noFixTimeout>
         <targetOnsetDelay>100</targetOnsetDelay>
