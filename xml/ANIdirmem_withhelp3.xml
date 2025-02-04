@@ -1,0 +1,27 @@
+<stimulus name="dirtuning" repeats="40" ex="ex_AniSaccadeTask3" bgColor="128 128 128">
+    <params>
+        <distance>[171]</distance>
+        <nextAngle>[ones(100,1)*45 ; ones(100,1)*-45 ; ones(100,1)*180]'</nextAngle>
+        <angle>0</angle>
+        <sacc_size>15</sacc_size>
+        <stimType>2002</stimType>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <targetColor>[255;255;255]</targetColor>
+        <helperTargetColor>[0;0;255]</helperTargetColor>
+        <timeToFix>1000</timeToFix>
+        <sacc_fixDuration>800</sacc_fixDuration>
+        <targetDuration>200</targetDuration>
+        <sacc_noFixTimeout>1000</sacc_noFixTimeout>
+        <targetOnsetDelay>100</targetOnsetDelay>
+        <targWinRadScale>[10]</targWinRadScale>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>680</saccadeTime>
+        <sacc_stayOnTarget>150</sacc_stayOnTarget>
+        <incorrectTimeout>1000</incorrectTimeout>
+        <delay>20</delay>
+        <isi>300</isi>
+    </params>
+</stimulus>                    
