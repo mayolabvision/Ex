@@ -304,7 +304,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         disp(behav)
 
-        e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
+        e.jumpSize = (e.crossingTime/1000)*e.pursuitSpeed*e.jump;
 
         if isfield(behav, 'prevTrial')== false
             behav.prevTrial = e.angle;
