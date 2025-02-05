@@ -229,7 +229,7 @@ codes.BCI_MISSED = 162 ; % BCI task (vs. non-BCI behavior) performed incorrectly
 codes.CORRECT_REJECT = 163 ;
 codes.LATE_CHOICE = 164 ;
 codes.BROKE_TASK = 165;
-codes.PURSUIT_TARG = 166;
+%codes.PURSUIT_TARG = 166;
 codes.BROKE_PURSUIT = 167;
 
 %%
