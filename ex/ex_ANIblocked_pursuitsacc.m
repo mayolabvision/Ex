@@ -23,6 +23,12 @@ function result = ex_ANIblocked_pursuitsacc(e)
     if isfield(behav, 'trialnum') == false
         behav.trialnum = 0;
     end
+
+    if isfield(behav, 'prevTrial') == false % run on the very first trial
+            behav.prevTrial = e.angle;
+    else % run on the 2nd trial and every one after
+           
+    end
     %% SACCADE TASK %%
 
 
@@ -46,15 +52,6 @@ function result = ex_ANIblocked_pursuitsacc(e)
         %e.targetOnsetDelay = e.sacc_fixDuration - (e.targetDuration + e.delay);
 
         % take radius and angle and figure out x/y for saccade direction
-
-        % eventually we should remove these disp statements
-        if isfield(behav, 'prevTrial') == false % run on the very first trial
-            behav.prevTrial = e.angle;
-            disp(behav.prevTrial);
-            
-        else % run on the 2nd trial and every one after
-           
-        end
 
         thisTrialAngle = wrapTo360(behav.prevTrial + e.nextAngle);
         theta = deg2rad(thisTrialAngle);
@@ -286,12 +283,6 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
     end
     
-    behav.trialnum = behav.trialnum + 1;
-    
-    if behav.trialnum > e.blocksize
-        behav.trialnum = 0;
-        behav.thisTrialType = 1;
-    end
     
 
     %% PURSUIT TASK %%
@@ -304,7 +295,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         disp(behav)
 
-        e.jumpSize = (e.crossingTime/1000)*e.pursuitSpeed*e.jump;
+        e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
 
         if isfield(behav, 'prevTrial')== false
             behav.prevTrial = e.angle;
@@ -449,19 +440,23 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         result = 1;
 
-        behav.prevTrial = thisTrialAngle;
-
         if isfield(e,'InterTrialPause')
             waitForMS(e.InterTrialPause);
         end
+    end
+    
+    %% POST TRIAL STUFF %%
 
-        behav.trialnum = behav.trialnum + 1;
+    behav.prevTrial = thisTrialAngle;
 
-        if behav.trialnum > e.blocksize
-            behav.trialnum = 0;
+    behav.trialnum  = behav.trialnum + 1;
+
+    if behav.trialnum > e.blocksize
+        behav.trialnum = 0;
+        if behav.thisTrialType == 0
+            behav.thisTrialType = 1;
+        else
             behav.thisTrialType = 0;
         end
     end
-    
-    
     
