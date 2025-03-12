@@ -1,6 +1,6 @@
 <stimulus name="freeViewPic" repeats="5" ex="ex_FreeViewPic" bgColor="128 128 128">
-    <params type="movie" runline="movieprefix,suffix numframes dwell startframe centerx centery" movieprefix="fixpics/fixpic">
-        <suffix>1</suffix>
+    <params type="movie" runline="movieprefix,suffix numframes dwell startframe centerx centery" movieprefix="movies/movie">
+        <suffix>[1]</suffix>
         <numframes>[200:100:800]</numframes>
         <dwell>200</dwell>
         <startframe>1</startframe>
