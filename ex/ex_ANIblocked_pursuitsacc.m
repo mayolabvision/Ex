@@ -59,6 +59,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
         newY = round(e.distance*sin(theta));
 
         %put send struct here
+        sendStruct(struct('thisTrialAngle', thisTrialAngle));
 
         if isfield(e,'extraBorder')
             extraborder = e.extraBorder; % use XML file if it's there
@@ -309,7 +310,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
         disp(thisTrialAngle); % the angle from the current trial after using the previous trial to help pick
 
         % send the new angle into the NEV
-        sendStruct(struct('newAngle',thisTrialAngle));
+        sendStruct(struct('thisTrialAngle',thisTrialAngle));
 
         % obj 1 is fix pt, obj 2 is target, diode attached to obj 2
         msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
@@ -459,4 +460,3 @@ function result = ex_ANIblocked_pursuitsacc(e)
             behav.thisTrialType = 0;
         end
     end
-    
