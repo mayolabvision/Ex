@@ -7,7 +7,7 @@
         <fixRad>5</fixRad>
         <fixColor>[0;0;255]</fixColor>
         <targetColor>[255;255;255]</targetColor>
-        <blocksize>40</blocksize>
+        <blocksize>2000</blocksize>
         <trialtype>[0]</trialtype>  <!--- 0 = saccades, 1 = pursuit -->
         <timeToFix>1000</timeToFix>
         
