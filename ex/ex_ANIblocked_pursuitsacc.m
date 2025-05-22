@@ -33,7 +33,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
     %% SACCADE TASK %%
 
 
-    if behav.thisTrialType == 0;
+    if behav.thisTrialType == 0
 
         sendCode(1000); % code number picked for saccades
 
@@ -277,7 +277,9 @@ function result = ex_ANIblocked_pursuitsacc(e)
         giveJuice();
         result = 1;
 
-
+        if isfield(e,'InterTrialPause')
+            waitForMS(e.InterTrialPause);
+        end
     end
     
     
@@ -310,7 +312,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         % obj 1 is fix pt, obj 2 is target, diode attached to obj 2
         msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
-        msg('set 2 movingoval 0 %i %i %i %i %i %f %i %i %i',[e.fixX e.fixY e.pursuit_size e.pursuitSpeed thisTrialAngle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
+        msg('set 2 movingoval 0 %i %i %i %i %f %f %i %i %i',[e.fixX e.fixY e.pursuit_size e.pursuitSpeed thisTrialAngle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
         msg('set 3 oval 0 %i %i %i %i %i %i',[x_endpoint y_endpoint e.pursuit_size e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
         msg(['diode ' num2str(objID)]);
 
@@ -318,7 +320,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         sendCode(codes.FIX_ON);
 
-        if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad);
+        if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad)
             % failed to achieve fixation
             sendCode(codes.IGNORED);
             msgAndWait('all_off');

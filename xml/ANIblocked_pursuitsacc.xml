@@ -10,6 +10,7 @@
         <blocksize>2000</blocksize>
         <trialtype>[0]</trialtype>  <!--- 0 = saccades, 1 = pursuit -->
         <timeToFix>1000</timeToFix>
+        <InterTrialPause>500</InterTrialPause>
         
         <!---Saccade-specific parameters  -->
         <distance>[171]</distance>
