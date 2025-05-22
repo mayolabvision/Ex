@@ -14,12 +14,13 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
     result = 0;
 
-    %enter what trial type you start with here??
+    %enter what trial type you start with here
     if isfield(behav,'thisTrialType') == false
         behav.thisTrialType = e.trialtype;
    
     end
 
+    %check if you're in the middle of a block
     if isfield(behav, 'trialnum') == false
         behav.trialnum = 0;
     end
@@ -276,11 +277,6 @@ function result = ex_ANIblocked_pursuitsacc(e)
         giveJuice();
         result = 1;
 
-        % store the current trial's angle in behav so it's ready for the next trial
-        % this only stores this value *if* the monkey gets everything correct
-        % is that right? Or do we want to update it on errors?
-        behav.prevTrial = thisTrialAngle;
-
 
     end
     
@@ -448,6 +444,8 @@ function result = ex_ANIblocked_pursuitsacc(e)
     
     %% POST TRIAL STUFF %%
 
+   %NOTE: counts all trials, including broke fix and incorrect
+
     behav.prevTrial = thisTrialAngle;
 
     behav.trialnum  = behav.trialnum + 1;
@@ -460,3 +458,4 @@ function result = ex_ANIblocked_pursuitsacc(e)
             behav.thisTrialType = 0;
         end
     end
+    
