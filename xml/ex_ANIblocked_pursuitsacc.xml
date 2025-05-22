@@ -1,7 +1,6 @@
 <stimulus name="purs_sacctuning" repeats="160" ex="ex_ANIblocked_pursuitsacc" bgColor="128 128 128">
     <params>
         <!--Overlapping parameters-->
-        <nextAngle>[ones(100,1)*45 ; ones(100,1)*-45 ; ones(100,1)*180]'</nextAngle>
         <angle>0</angle>
         <fixX>0</fixX>
         <fixY>0</fixY>
@@ -31,7 +30,7 @@
         <isi>300</isi>
         
         <!--Pursuit-specific parameters-->
-        <crossingTime>110</crossingTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
+        <reactionTime>110</reactionTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
         <pursuit_size>5</pursuit_size>
         
         <pursuitDuration>900</pursuitDuration>
@@ -40,9 +39,12 @@
         <pursuit_stayOnTarget>300</pursuit_stayOnTarget>
         <endPursuitWinScale>1</endPursuitWinScale>
         
-        <pursuit_fixDuration>[350:50:950]</pursuit_fixDuration>
         
         <pursuitSpeed>[10]</pursuitSpeed>
-        <jump>[-1 0 1]</jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
+        <jump>[-1]</jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
     </params>
+    <randoms>
+        <pursuit_fixDuration>[350:50:950]</pursuit_fixDuration>
+        <nextAngle>[45 -45 180]</nextAngle>
+    </randoms>
 </stimulus>                    
