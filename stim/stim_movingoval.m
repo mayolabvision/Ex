@@ -13,7 +13,7 @@ global objects;
 global sv;
 
 if strcmp(optstr,'setup')
-    a = sscanf(arg,'%i %i %i %i %i %i %f %i %i %i');
+    a = sscanf(arg,'%i %i %i %i %i %f %f %i %i %i');
     % arguments: (1) frameCount
     %            (2) startx position
     %            (3) starty position

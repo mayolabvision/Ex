@@ -1,0 +1,48 @@
+<stimulus name="purs_sacctuning" repeats="160" ex="ex_ANIblocked_pursuitsacc" bgColor="128 128 128">
+    <params>
+        <!--Overlapping parameters-->
+        <nextAngle>[ones(100,1)*45 ; ones(100,1)*-45 ; ones(100,1)*180]'</nextAngle>
+        <angle>0</angle>
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <targetColor>[255;255;255]</targetColor>
+        <blocksize>40</blocksize>
+        <trialtype>[0]</trialtype>  <!--- 0 = saccades, 1 = pursuit -->
+        <timeToFix>1000</timeToFix>
+        
+        <!---Saccade-specific parameters  -->
+        <distance>[171]</distance>
+        <sacc_size>15</sacc_size>
+        <stimType>2002</stimType>
+        <helperTargetColor>[0;0;255]</helperTargetColor>
+        
+        <sacc_fixDuration>800</sacc_fixDuration>
+        <targetDuration>200</targetDuration>
+        <sacc_noFixTimeout>1000</sacc_noFixTimeout>
+        <targetOnsetDelay>100</targetOnsetDelay>
+        <targWinRadScale>[0.375]</targWinRadScale>   <!--originally [0.375]-->
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>680</saccadeTime>
+        <sacc_stayOnTarget>150</sacc_stayOnTarget>
+        <incorrectTimeout>1000</incorrectTimeout>
+        <delay>20</delay>
+        <isi>300</isi>
+        
+        <!--Pursuit-specific parameters-->
+        <crossingTime>110</crossingTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
+        <pursuit_size>5</pursuit_size>
+        
+        <pursuitDuration>900</pursuitDuration>
+        <pursuitRadius>4</pursuitRadius> <!-- degrees visual angle -->
+        <pursuit_noFixTimeout>2000</pursuit_noFixTimeout>
+        <pursuit_stayOnTarget>300</pursuit_stayOnTarget>
+        <endPursuitWinScale>1</endPursuitWinScale>
+        
+        <pursuit_fixDuration>[350:50:950]</pursuit_fixDuration>
+        
+        <pursuitSpeed>[10]</pursuitSpeed>
+        <jump>[-1 0 1]</jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
+    </params>
+</stimulus>                    

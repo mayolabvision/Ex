@@ -14,19 +14,26 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
     result = 0;
 
-    %enter what trial type you start with here??
+    %enter what trial type you start with here
     if isfield(behav,'thisTrialType') == false
         behav.thisTrialType = e.trialtype;
    
     end
 
+    %check if you're in the middle of a block
     if isfield(behav, 'trialnum') == false
         behav.trialnum = 0;
+    end
+
+    if isfield(behav, 'prevTrial') == false % run on the very first trial
+            behav.prevTrial = e.angle;
+    else % run on the 2nd trial and every one after
+           
     end
     %% SACCADE TASK %%
 
 
-    if behav.thisTrialType == 0;
+    if behav.thisTrialType == 0
 
         sendCode(1000); % code number picked for saccades
 
@@ -47,21 +54,13 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         % take radius and angle and figure out x/y for saccade direction
 
-        % eventually we should remove these disp statements
-        if isfield(behav, 'prevTrial') == false % run on the very first trial
-            behav.prevTrial = e.angle;
-            disp(behav.prevTrial);
-            
-        else % run on the 2nd trial and every one after
-           
-        end
-
         thisTrialAngle = wrapTo360(behav.prevTrial + e.nextAngle);
         theta = deg2rad(thisTrialAngle);
         newX = round(e.distance*cos(theta));
         newY = round(e.distance*sin(theta));
 
         %put send struct here
+        sendStruct(struct('thisTrialAngle', thisTrialAngle));
 
         if isfield(e,'extraBorder')
             extraborder = e.extraBorder; % use XML file if it's there
@@ -278,20 +277,11 @@ function result = ex_ANIblocked_pursuitsacc(e)
         giveJuice();
         result = 1;
 
-        % store the current trial's angle in behav so it's ready for the next trial
-        % this only stores this value *if* the monkey gets everything correct
-        % is that right? Or do we want to update it on errors?
-        behav.prevTrial = thisTrialAngle;
-
-
+        if isfield(e,'InterTrialPause')
+            waitForMS(e.InterTrialPause);
+        end
     end
     
-    behav.trialnum = behav.trialnum + 1;
-    
-    if behav.trialnum > e.blocksize
-        behav.trialnum = 0;
-        behav.thisTrialType = 1;
-    end
     
 
     %% PURSUIT TASK %%
@@ -304,7 +294,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         disp(behav)
 
-        e.jumpSize = (e.crossingTime/1000)*e.pursuitSpeed*e.jump;
+        e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
 
         if isfield(behav, 'prevTrial')== false
             behav.prevTrial = e.angle;
@@ -318,11 +308,11 @@ function result = ex_ANIblocked_pursuitsacc(e)
         disp(thisTrialAngle); % the angle from the current trial after using the previous trial to help pick
 
         % send the new angle into the NEV
-        sendStruct(struct('newAngle',thisTrialAngle));
+        sendStruct(struct('thisTrialAngle',thisTrialAngle));
 
         % obj 1 is fix pt, obj 2 is target, diode attached to obj 2
         msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
-        msg('set 2 movingoval 0 %i %i %i %i %i %f %i %i %i',[e.fixX e.fixY e.pursuit_size e.pursuitSpeed thisTrialAngle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
+        msg('set 2 movingoval 0 %i %i %i %i %f %f %i %i %i',[e.fixX e.fixY e.pursuit_size e.pursuitSpeed thisTrialAngle e.jumpSize e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
         msg('set 3 oval 0 %i %i %i %i %i %i',[x_endpoint y_endpoint e.pursuit_size e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
         msg(['diode ' num2str(objID)]);
 
@@ -330,7 +320,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         sendCode(codes.FIX_ON);
 
-        if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad);
+        if ~waitForFixation(e.timeToFix,e.fixX,e.fixY,params.fixWinRad)
             % failed to achieve fixation
             sendCode(codes.IGNORED);
             msgAndWait('all_off');
@@ -449,19 +439,25 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         result = 1;
 
-        behav.prevTrial = thisTrialAngle;
-
         if isfield(e,'InterTrialPause')
             waitForMS(e.InterTrialPause);
         end
+    end
+    
+    %% POST TRIAL STUFF %%
 
-        behav.trialnum = behav.trialnum + 1;
+   %NOTE: counts all trials, including broke fix and incorrect
 
-        if behav.trialnum > e.blocksize
-            behav.trialnum = 0;
+    behav.prevTrial = thisTrialAngle;
+
+    behav.trialnum  = behav.trialnum + 1;
+
+    if behav.trialnum > e.blocksize
+        behav.trialnum = 0;
+        if behav.thisTrialType == 0
+            behav.thisTrialType = 1;
+        else
             behav.thisTrialType = 0;
         end
     end
-    
-    
     

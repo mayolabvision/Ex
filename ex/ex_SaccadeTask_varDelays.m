@@ -112,7 +112,7 @@ function result = ex_SaccadeTask_varDelays(e)
 
     msgAndWait('obj_on 1');
     
-    unixSendPulse(19,10); % This used to be above the 'ack' two lines up, now I moved it so it aligns well to FIX_ON for alignment between this pulse and the FIX_ON code
+%     unixSendPulse(19,10); % This used to be above the 'ack' two lines up, now I moved it so it aligns well to FIX_ON for alignment between this pulse and the FIX_ON code
                       % I moved this on 03/25/2019 - MAS
     sendCode(codes.FIX_ON);
     
