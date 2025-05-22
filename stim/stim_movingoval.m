@@ -27,9 +27,6 @@ if strcmp(optstr,'setup')
     stimname = mfilename;
     objects{objID} = struct('type',stimname(6:end),'frame',0,'fc',a(1),'x',a(2), ...
         'y',-a(3),'rad',a(4),'spd',a(5), 'ang', a(6), 'jump', a(7), 'col',a(8:end));
-    disp(a(6))
-    disp(a(7))
-    disp(a(8:end))
     % Frame by Frame offset
     objects{objID}.xoffsetPerFrame = a(5)*sv.ppd*cos(deg2rad(a(6)))/round(1/sv.ifi); % spd (Degrees per second) * Pix2Deg(#  pixels in 1 deg vis ang) *cos(ang (radians))/FrameRate (Hz)
     objects{objID}.yoffsetPerFrame = -1*(a(5)*sv.ppd*sin(deg2rad(a(6)))/round(1/sv.ifi)); % spd*Pix2Deg*sin(ang)/FrameRate) % -1 to flip for PTB vs Ex vertical 
