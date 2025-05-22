@@ -365,7 +365,7 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         % turn target off and turn on fixation target
         msgAndWait('obj_off 2')
-        sendCode(codes.12697); % Custom code PURSUIT_TARG_OFF - for pursuit target offset
+        sendCode(12697); % Custom code PURSUIT_TARG_OFF - for pursuit target offset
         msgAndWait('obj_on 3')
         sendCode(codes.TARG3_ON);
 
