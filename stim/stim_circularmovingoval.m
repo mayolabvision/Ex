@@ -13,7 +13,7 @@ global objects;
 global sv;
 
 if strcmp(optstr,'setup')
-    a = sscanf(arg,'%i %i %i %i %i %i %i %i');
+    a = sscanf(arg,'%i %f %i %f %i %i %i %i');
     % arguments: (1) frameCount
     %            (2) eccentricity - radius of of circle perferably in dva
     %            (3) ang velocity - angular change per second
@@ -25,8 +25,6 @@ if strcmp(optstr,'setup')
     stimname = mfilename;
     objects{objID} = struct('type',stimname(6:end),'frame',0,'fc',a(1),'eccentricity',a(2), ...
         'angVelocity',a(3),'startingAngle',a(4),'rad',a(5), 'col',a(6:end));
-
-
     
     % Angle Change per frame 
     % sv.ppd = pixels in 1 degree of visual angle
