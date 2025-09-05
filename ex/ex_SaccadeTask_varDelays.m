@@ -39,7 +39,7 @@ function result = ex_SaccadeTask_varDelays(e)
 % 2015/08/14 by Matt Smith - added recentering when detecting saccade
 %
 % 2023/06/16 by SM Willett - made targetOnsetDelay a function of fixationDuration
-% sllowing for variable fixDurations and added incorrectTimeout
+% allowing for variable fixDurations and added incorrectTimeout
 %
 % 2025/02/03 by Kendra Noneman - added "stimType" to xml to force saccade type
 % and allow for variable timing across all saccade types, calculate fixDuration
@@ -66,6 +66,11 @@ function result = ex_SaccadeTask_varDelays(e)
     theta = deg2rad(e.angle);
     newX = round(e.distance*cos(theta));
     newY = round(e.distance*sin(theta));
+    
+    % Set helpTarg value to 0 and change to 1 if it gets turned on
+    % Added to have helper target turn on once in fixation on antisaccade
+    % trials. SMW 2025/08/28
+    helpTarg = 0;
     
     % now figure out if you need to shift the fixation point around so the
     % saccade will fit on the screen (e.g., for an 'amp' series). The
@@ -101,9 +106,19 @@ function result = ex_SaccadeTask_varDelays(e)
     end
     
     % obj 1 is fix pt, obj 2 is target, diode attached to obj 2
-    msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
+    % Fixation
+    if isfield(e, 'antiSaccade') & e.antiSaccade == 1 % Added by SMW for Antisaccade functionality 2025/07/22
+        msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColorAnti(1) e.fixColorAnti(2) e.fixColorAnti(3)]);
+    else
+        msg('set 1 oval 0 %i %i %i %i %i %i',[e.fixX e.fixY e.fixRad e.fixColor(1) e.fixColor(2) e.fixColor(3)]);
+    end
+    % Target 
     msg('set 2 oval 0 %i %i %i %i %i %i',[newX newY e.size e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
-    if isfield(e,'helperTargetColor')
+    % Helper Target
+    if isfield(e, {'helperTargetColor', 'antiSaccade'}) & e.antiSaccade == 1 % Added by SMW for Antisaccade functionality 2025/07/22
+        msg('set 3 oval 0 %i %i %i %i %i %i',[-newX -newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
+        msg('set 4 oval 0 %i %i %i %i %i %i',[-newX -newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]); % Added b SMW to have helper appear once in target window 2025/08/28
+    elseif isfield(e, 'helperTargetColor')
         msg('set 3 oval 0 %i %i %i %i %i %i',[newX newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
     end
     msg(['diode ' num2str(objID)]);    
@@ -245,6 +260,7 @@ function result = ex_SaccadeTask_varDelays(e)
             if rand < e.helperTargetRatio
                 msg('obj_on 3')
                 sendCode(codes.TARG_ON);
+                helpTarg = 1;
             end
         else
             msg('obj_on 3');
@@ -252,33 +268,72 @@ function result = ex_SaccadeTask_varDelays(e)
         end
     end
     
-    
-    targetWindowRadius = round(e.targWinRadScale*e.distance);
-    
-    if ~waitForFixation(e.saccadeTime,newX,newY,targetWindowRadius)
-        % didn't reach target
-        sendCode(codes.NO_CHOICE);
-        msgAndWait('all_off');
-        sendCode(codes.FIX_OFF);
-        waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
-        result = codes.NO_CHOICE;
-        return;
+    % Added for antisaccade functionality by SMW 2025/07/22
+    if isfield(e, 'antiSaccade') & e.antiSaccade == 1
+        
+        targetWindowRadius = round(e.targWinRadScaleAnti*e.distance);
+        
+        if ~waitForFixation(e.saccadeTime,-newX,-newY,targetWindowRadius)
+            % didn't reach target
+            sendCode(codes.NO_CHOICE);
+            msgAndWait('all_off');
+            sendCode(codes.FIX_OFF);
+            waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
+            result = codes.NO_CHOICE;
+            return;
+        end
+        
+        % MAS 2015/08/14 added this code so we know when he reaches the window
+        sendCode(codes.ACQUIRE_TARG);
+        
+        % SMW 2025/08/28 added this turn on helper target once window is
+        % acquired
+        if helpTarg == 0
+            msg('obj_on 4');
+            sendCode(codes.TARG_ON);
+        end
+        
+        
+        if ~waitForMS(e.stayOnTarget,-newX,-newY,targetWindowRadius)
+            % didn't stay on target long enough
+            sendCode(codes.BROKE_TARG);
+            msgAndWait('all_off');
+            sendCode(codes.FIX_OFF);
+            waitForMS(e.incorrectTimeout)
+            result = codes.BROKE_TARG;
+            return;
+        end
+        
+    else
+        
+        targetWindowRadius = round(e.targWinRadScale*e.distance);
+        
+        if ~waitForFixation(e.saccadeTime,newX,newY,targetWindowRadius)
+            % didn't reach target
+            sendCode(codes.NO_CHOICE);
+            msgAndWait('all_off');
+            sendCode(codes.FIX_OFF);
+            waitForMS(e.incorrectTimeout) % Added by SM Willett - to timeout incorrect trials. 2023/06/16
+            result = codes.NO_CHOICE;
+            return;
+        end
+        
+        % MAS 2015/08/14 added this code so we know when he reaches the window
+        sendCode(codes.ACQUIRE_TARG);
+        
+        
+        if ~waitForMS(e.stayOnTarget,newX,newY,targetWindowRadius)
+            % didn't stay on target long enough
+            sendCode(codes.BROKE_TARG);
+            msgAndWait('all_off');
+            sendCode(codes.FIX_OFF);
+            waitForMS(e.incorrectTimeout)
+            result = codes.BROKE_TARG;
+            return;
+        end
+        
     end
     
-    % MAS 2015/08/14 added this code so we know when he reaches the window
-    sendCode(codes.ACQUIRE_TARG);
-    
-    
-    if ~waitForMS(e.stayOnTarget,newX,newY,targetWindowRadius)
-        % didn't stay on target long enough
-        sendCode(codes.BROKE_TARG);
-        msgAndWait('all_off');
-        sendCode(codes.FIX_OFF); 
-        waitForMS(e.incorrectTimeout) 
-        result = codes.BROKE_TARG;
-        return;
-    end
-
     sendCode(codes.FIXATE);
     sendCode(codes.CORRECT);
     sendCode(codes.TARG_OFF);
