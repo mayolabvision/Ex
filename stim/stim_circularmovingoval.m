@@ -13,7 +13,7 @@ global objects;
 global sv;
 
 if strcmp(optstr,'setup')
-    a = sscanf(arg,'%i %f %i %f %i %i %i %i');
+    a = sscanf(arg,'%i %f %f %f %i %i %i %i');
     % arguments: (1) frameCount
     %            (2) eccentricity - radius of of circle perferably in dva
     %            (3) ang velocity - angular change per second
