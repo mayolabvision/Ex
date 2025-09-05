@@ -676,7 +676,11 @@ if isfield(params,'calibDotSize') % so user can override voltScaledefault
 else
     wins.displayCalibDotRad = 5; % for the subject to see via showex
 end
-wins.displayCalibDotColor = [255 255 255]; 
+if isfield(params,'calibDotColor')
+    wins.displayCalibDotColor = params.calibDotColor;
+else
+    wins.displayCalibDotColor = [255 255 255]; 
+end
 
 % Screen layout for the control display
 cRes = wins.controlResolution;
