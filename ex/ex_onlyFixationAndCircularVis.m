@@ -24,11 +24,12 @@ global params codes behav;
 
 e = e(1); %in case more than one 'trial' is passed at a time...
 
+angularVelocity = (e(1).angularVelocity / e(1).eccentricity) * (180 / pi);
 
 objID = 2;
 % obj 1 is fix spot, diode attached to obj 2
 msg('set 1 oval 0 %i %i %i %i %i %i',[e(1).fixX e(1).fixY e(1).fixRad e(1).fixColor(1) e(1).fixColor(2) e(1).fixColor(3)]);
-msg('set 2 circularmovingoval 0 %i %i %i %i %i %i %i',[e(1).eccentricity e(1).angularVelocity e(1).startingAngle e(1).radius e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
+msg('set 2 circularmovingoval 0 %i %i %i %i %i %i %i',[e(1).eccentricity angularVelocity e(1).startingAngle e(1).radius e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
 msg(['diode ' num2str(objID)]);
 
 

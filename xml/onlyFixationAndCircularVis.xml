@@ -1,4 +1,4 @@
-<stimulus name="onlyFixation" repeats="400" ex="ex_onlyFixationAndCircularVis" bgColor="128 128 128">
+<stimulus name="onlyFixation" repeats="400" ex="ex_onlyFixationAndCircularVis" bgColor="0 0 0">
     <params>
         <fixX>0</fixX>
         <fixY>0</fixY>
@@ -9,13 +9,13 @@
         
        
         <eccentricity>10</eccentricity> <!--- degrees of visual angle --> 
-        <angularVelocity>90</angularVelocity> <!--- degrees -->
+        <angularVelocity>90</angularVelocity> <!--- degrees/sec -->
         <radius>[15]</radius> <!--- pixels(?) -->
         <targetColor>[255;255;255]</targetColor>
         <targetDuration>1500</targetDuration> <!--- in ms -->
         
         
-        
+   
         
         <noFixTimeout>2000</noFixTimeout>  
         <InterTrialPause>900</InterTrialPause>
