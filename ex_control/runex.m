@@ -69,8 +69,8 @@ p = inputParser;
 p.addOptional('fullScreen',true,@islogical);
 p.addOptional('useDatabase',true,@islogical);
 p.addOptional('repeats',0,@(x) mod(x,1)==0 && (x>=0));
-p.addOptional('repeats_perTask',1,@(x) isnumeric(x) || iscell(x));
-p.addOptional('taskBlockType','block',@ischar);
+p.addOptional('repeats_perTask',0,@(x) isnumeric(x) || iscell(x));
+p.addOptional('taskBlockType','block',@ischar); % 'block' or interleaved'
 p.addOptional('saveMat',true,@islogical);
 p.addOptional('demoMode',false,@islogical);
 p.addOptional('sessionNumber',NaN,@(x) mod(x,1)==0 && (x>=0));
@@ -82,8 +82,8 @@ useDatabase = p.Results.useDatabase;
 repeats = p.Results.repeats;
 saveMat = p.Results.saveMat;
 demoMode = p.Results.demoMode;
-%nTaskBlocks = p.Results.nTaskBlocks;
-%taskBlockType = p.Results.taskBlockType;
+repeats_perTask = p.Results.repeats_perTask;
+taskBlockType = p.Results.taskBlockType;
 
 if demoMode
     params.getEyes = 0;
@@ -371,6 +371,13 @@ try
             fclose(exfid);
             
             xmlParams{xx}.xmlFile = xmlFile{xx};
+            
+            xmlParams{xx}.taskBlockType = taskBlockType;
+            if isscalar(repeats_perTask)
+                xmlParams{xx}.rpts_perTask = repeats_perTask;
+            else
+                xmlParams{xx}.rpts_perTask = repeats_perTask{xx};
+            end
         end
         
     end
@@ -515,6 +522,7 @@ if ~isfield(params,'randomizeCalibration'), params.randomizeCalibration = false;
 eyeHistory = nan(params.eyeHistoryBufferSize,3); %3 cols are x, y, time
 eyeHistoryCurrentPos = 1;
 currentBlock = 1;
+currentTaskBlock = 1;
 pauseFlag = false;
 if repeats > 0 % if repeats > 0 the user passed it in at the command line, otherwise use what the XML file says
     if ~iscell(xmlParams)
@@ -674,6 +682,10 @@ else
     end
     xmlname = strjoin(xmlname, '_');
     xmlParams_temp.xmlFile = xmlname;
+    
+    for xx = 1:numel(xmlFile)
+       xmlParams{xx}.tempName = xmlParams_temp; 
+    end
 end
 defaultoutfile=[params.SubjectID,'_',params.sessionNumber,'_',datestr(now, 'yyyy.mmm.DD.HH.MM.SS'),'_',xmlname,'.mat'];
 if saveMat
@@ -954,7 +966,7 @@ while true
                     if ~iscell(xmlParams)
                         [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     else
-                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     end
                 end
                 if ~iscell(xmlParams)
@@ -968,7 +980,7 @@ while true
                         if ~iscell(xmlParams)
                             [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                         else
-                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                         end
                     catch err
                         if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
@@ -988,7 +1000,7 @@ while true
                             writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
                             %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
                         else
-                            writeExperimentInfoToDatabase([], xmlParams_temp, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
+                            writeExperimentInfoToDatabase([], xmlParams{xx}.tempName, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
                             %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
                         end
                     end
@@ -998,7 +1010,7 @@ while true
                             if ~iscell(xmlParams)
                                 [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                             else
-                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                             end
                         catch err
                             if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
@@ -1362,8 +1374,8 @@ fclose all;
     function exRunExperiment_multiTask
         persistent ordering trialCounter %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
         try
-            % set the background color here
-            msgAndWait('bg_color %d %d %d',xmlParams.bgColor);    
+            % set the initial background color here
+            msgAndWait('bg_color %d %d %d',xmlParams{1}.bgColor);    
             
             % set the trialTic here and initialize thisTrialCodes so that this
             % first sendStruct call has valid times and stores the codes
@@ -1372,235 +1384,258 @@ fclose all;
             trialTic = tic;
             thisTrialCodes = [];
             resetTicFlag = 0;
-            sendStruct(exCatstruct(xmlParams,params,'sorted'));
+            
+            % Send struct for each task at the beginning
+            for tsk = 1:numel(xmlParams)
+                sendStruct(exCatstruct(xmlParams{tsk},params,'sorted'));
+            end
             matlabUDP2('send', sockets(1),'stim');
             
             trialMessage = 0;
             
-            if currentBlock > xmlParams.rpts
-                currentBlock = 1;
+            % rpts = number of times go through all tasks, same within each
+            % xmlParams cell 
+            if currentTaskBlock > xmlParams{1}.rpts
+                currentTaskBlock = 1;
             end
             
-            for j = currentBlock:xmlParams.rpts
+            % How many repeats of each task 
+            for j = currentTaskBlock:xmlParams{1}.rpts
                 
-                if ~pauseFlag
-                    ordering = createOrdering(expt,...
-                        'blockRandomize',xmlParams.blockRandomize,...
-                        'conditionFrequency',xmlParams.conditionFrequency,...
-                        'numBlocksPerRandomization',xmlParams.numBlocksPerRandomization,...
-                        'exFileControl',xmlParams.exFileControl); %-ACS 23Oct2012
-                    trialCounter = 1;
-                end
-                if any(ordering<1), ordering = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
-                
-                abortCounter = 0;
-                while ~isempty(ordering)
-                    if any(ordering<1), ordering = []; break; end
-                    cnd = ordering(1:min(xmlParams.nStimPerFix,numel(ordering)));
-                                       
-                    % only set the trialTic for trials that aren't immediately
-                    % following the 's' command
-                    if resetTicFlag
-                        trialTic = tic;
-                        thisTrialCodes = [];
-                    else
-                        resetTicFlag = 1;
-                    end
-
-                    if exist('trialResultStrings','var')
-                        trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
-                    else
-                        trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
-                    end
-                    trialData{wins.trialData.promptLine} = runningPrompt;
-                    drawTrialData();
-                    
-                    % setup the allCodes struct for this trial
-                    allCodes{end+1} = struct(); %#ok<AGROW>
-                    % This value should be as close as possible to the time
-                    % that code 1 is sent, thus allowing us to recreate global
-                    % time.
-                    allCodes{end}.startTime = datestr(now,'HH.MM.SS.FFF');
-                    sendCode(codes.START_TRIAL);
-                    
-                    % e needs to be a cell array or struct array  *****
-                    e = expt(cnd);
-                    
-                    %                     if isfield(e{1},'bgColor'), %change the bg_color for this trial (set of stimuli)...
-                    %                         msg('bg_color %d %d %d',e{1}.);
-                    %                     end;
-                    fn = fieldnames(xmlRand);
-                    for e_indx = 1:length(e)
-                        for f = 1:length(fn)
-                            fieldName = fn{f};
-                            val = xmlRand.(fieldName);
-                            val = val(randi(length(val)));
-                            e{e_indx}.(fieldName) = val;
+                % Block of each task
+                if isequal(xmlParams{1}.taskBlockType, 'block')
+                    for tsk = 1:numel(xmlParams)
+                 
+                        if currentBlock > xmlParams{tsk}.rpts_perTask
+                            currentBlock = 1;
                         end
-                    end
-                    e = cell2mat(e);
-                    
-                    % send the trial parameters here, before adding
-                    % eParams to e (because eParams were sent already)
-                    % loop over nstim
-                    for I =1:numel(cnd)
-                        sendCode(cnd(I)+32768); % send condition # in 32769-65535 range
-                        sendStruct(e(I));
-                    end
-                    
-                    e = num2cell(e);
-                    for I = 1:numel(e)
-                        e{I} = exCatstruct(xmlParams,e{I});
-                        e{I}.('currentBlock')=j;
-                        e{I}.('currentCnd')=cnd(I);
-                        e{I}.trialCounter = trialCounter;
-                        e{I}.ordering = ordering;
-                    end
-                    e = cell2mat(e);
-                    
-                    % if desired, send an alignment pulse out the digital
-                    % port here
-                    if params.alignPulseEnabled
-                        unixSendPulse(params.alignPulseChan,params.alignPulseDuration);
-                    end                    
-                    
-                    try
-                        if isfield(e,'juiceX')
-                            params.juiceX = e(1).juiceX;
-                        end
-                        trialResult = feval(e(1).exFileName,e); % CALLING THE EX FILE
                         
-                        msgAndWait('checkForAborts'); %just to check for aborts.
-                    catch ME %This block handles the cases when showex aborts...
-                        %%% just throw it right away for now MS August 2021
-                        %msgAndWait('prerethrow')
-                        rethrow(ME); %kicks up to runexError function
-                        %msgAndWait('postrethrow')
-                        switch ME.identifier
-                            case 'waitFor:aborted'
-                                sendCode(codes.SHOWEX_ABORT);
-                                trialMessage = 0;
-                                trialResult = codes.SHOWEX_ABORT;
-                                abortCounter = abortCounter+1;
-                                if abortCounter>10
-                                    %kick up to higher-level try/catch to exit gracefully
-                                    error('RUNEX:tooManyAborts','Too many consecutive aborts'); 
-                                end
-                                msgAndWait('resume');
-                            case 'exFunction:bci_aborted'
-                                sendCode(codes.BCI_ABORT);
-                                trialMessage = 0;
-                                trialResult = codes.BCI_ABORT;
-                                sendCode(codes.END_TRIAL); % send an official end trial code so that BCI analysis is able to sync the trial numbers
-                                error('RUNEX:bciAbort','BCI computer is not responding');
-                            otherwise %some error other than an abort
-                                rethrow(ME); %kicks up to runexError function
-                        end
-                    end
-                    
-                    %Scoring:
-                    
-                    trialResult(trialResult==1) = codes.CORRECT; %for backwards compatibility -ACS 23Oct2012
-                    trialResult(trialResult==2) = codes.BROKE_FIX; %for backwards compatibility
-                    trialResult(trialResult==3) = codes.IGNORED; %for backwards compatibility
-                    trialResultStrings = exDecode(trialResult(:));
-                    
-                    % Copy the exPrint data (meant to be written from
-                    % within an ex function) into trialData so it's printed
-                    % first some argument checking
-                    % should we also make sure there are no numeric values?
-                    if size(exPrint,2)~=1
-                        warning('exPrint must be Nx1 - runex is overwriting it to avoid an error');
-                        exPrint = cell(wins.trialData.exPrintLines,1);
-                    elseif size(exPrint,1)>wins.trialData.exPrintLines
-                        warning('The size of the exPrint cell array was increased - runex is trimming it to avoid an error');
-                        exPrint = exPrint(1:wins.trialData.exPrintLines,1);
-                    elseif size(exPrint,1)<wins.trialData.exPrintLines
-                        warning('The size of the exPrint cell array was reduced - runex is overwriting it to avoid an error');
-                        exPrint = cell(wins.trialData.exPrintLines,1);
-                    end
-                    % trialData user lines get exPrint copied in so it will print
-                    trialData(wins.trialData.userLine:wins.trialData.lines) = exPrint;
-                    
-                    for ox = 1:numel(availableOutcomes) %new scoring -ACS 23Oct2012
-                        if retry.(availableOutcomes{ox})
-                            stats(ox) = stats(ox)+any(ismember(trialResultStrings,availableOutcomes{ox})); %only count these once per fix
-                        else
-                            stats(ox) = stats(ox)+sum(ismember(trialResultStrings,availableOutcomes{ox})); %sum these per fix
-                        end
-                        nOutcomesPerLine = 5; %for display purposes...
-                        currentLine = wins.trialData.outcomesLine+floor((ox-1)/nOutcomesPerLine);
-                        if mod(ox,nOutcomesPerLine)==1
-                            trialData{currentLine}=sprintf('%i %s',stats(ox),availableOutcomes{ox});
-                        else
-                            trialData{currentLine} = [trialData{currentLine} sprintf(', %i %s',stats(ox),availableOutcomes{ox})];
-                        end
-                    end
-                    
-                    msg('all_off');
-                    msgAndWait('rem_all');
-                    
-                    if trialMessage>-1
-                        checked = false(size(cnd));
-                        for ox = 1:numel(trialResultStrings)
-                            checked(ox) = ~retry.(trialResultStrings{ox});
-                        end
-                        if any(checked)
-                            trialCounter = trialCounter+sum(checked);
-                            for cx = 1:numel(cnd)      %Not sure this is functioning in the intended way yet... -ACS
-                                trialCodes{cnd(cx)}{end+1} = thisTrialCodes;
+                        for blk = currentBlock:xmlParams{tsk}.rpts_perTask
+                            if ~pauseFlag
+                                ordering = createOrdering(expt{tsk},...
+                                    'blockRandomize',xmlParams{tsk}.blockRandomize,...
+                                    'conditionFrequency',xmlParams{tsk}.conditionFrequency,...
+                                    'numBlocksPerRandomization',xmlParams{tsk}.numBlocksPerRandomization,...
+                                    'exFileControl',xmlParams{tsk}.exFileControl); %-ACS 23Oct2012
+                                trialCounter = 1;
                             end
-                        end
-                        switch xmlParams.badTrialHandling %added 23Oct2012 -ACS
-                            case 'noRetry' %don't retry bad trials
-                                ordering(1:numel(cnd)) = []; %just erase the current cnd from ordering and don't look back...
-                            case 'immediateRetry'
-                                ordering(find(checked)) = []; %tick off the good trials and feed back the ordering as is. This option really only makes sense if nStimPerFix==1.
-                            case 'reshuffle'
-                                ordering(find(checked)) = []; %tick off the good trials
-                                ordering = ordering(randperm(numel(ordering))); %reshuffle the remaining conditions
-                            case 'endOfBlock'
-                                needsRetried = ordering(find(~checked)); %trials that haven't been checked off
-                                ordering = [ordering(numel(cnd)+1:end) needsRetried]; %take the conditions that haven't been attempted yet, and add the conditions needing another try to the end
-                            otherwise
-                                error('RUNEX:unknownBadTrial','Unrecognized option for badTrialHandling, quit to diagnose.'); %kicks up to runexError
-                        end
-                    end
+                            if any(ordering<1), ordering = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
 
-                    msgAndWait('ack'); % sync up before ending the trial
-                    sendCode(codes.END_TRIAL);
-                    
-                    % Global history of trial codes
-                    %
-                    % NOTE: These codes are all referenced relative to the time
-                    % of the trial start (code '1') because of the first line
-                    % below. The "global time" for the start of each trial is
-                    % stored in allCodes.startTime
-                    thisTrialCodes(:,2) = thisTrialCodes(:,2) - thisTrialCodes(find(thisTrialCodes(:,1)==1,1,'first'),2);
-                    allCodes{end}.cnd = cnd;
-                    allCodes{end}.trialResult = trialResult;
-                    allCodes{end}.codes = thisTrialCodes;
-                    
-                    % Write allCodes to a file to keep track of data on Ex side
-                    % Can use the behav struct to keep track of behavior if you
-                    % like. Contents of behav are user-defined in ex-functions
-                    if params.writeFile
-                        save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','xmlParams','-v6'); % '-v6' for speed -MAS 27Feb2016
-                    end
-                    
-                    if trialMessage == -1
-                        break;
+                            abortCounter = 0;
+                            while ~isempty(ordering)
+                                if any(ordering<1), ordering = []; break; end
+                                cnd = ordering(1:min(xmlParams{tsk}.nStimPerFix,numel(ordering)));
+
+                                % only set the trialTic for trials that aren't immediately
+                                % following the 's' command
+                                if resetTicFlag
+                                    trialTic = tic;
+                                    thisTrialCodes = [];
+                                else
+                                    resetTicFlag = 1;
+                                end
+
+                                if exist('trialResultStrings','var')
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rpts_perTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                                else
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rpts_perTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
+                                end
+                                trialData{wins.trialData.promptLine} = runningPrompt;
+                                drawTrialData();
+
+                                % setup the allCodes struct for this trial
+                                allCodes{end+1} = struct(); %#ok<AGROW>
+                                % This value should be as close as possible to the time
+                                % that code 1 is sent, thus allowing us to recreate global
+                                % time.
+                                allCodes{end}.startTime = datestr(now,'HH.MM.SS.FFF');
+                                sendCode(codes.START_TRIAL);
+
+                                % e needs to be a cell array or struct array  *****
+                                e = expt{tsk}(cnd);
+
+                                %                     if isfield(e{1},'bgColor'), %change the bg_color for this trial (set of stimuli)...
+                                %                         msg('bg_color %d %d %d',e{1}.);
+                                %                     end;
+                                fn = fieldnames(xmlRand{tsk});
+                                for e_indx = 1:length(e)
+                                    for f = 1:length(fn)
+                                        fieldName = fn{f};
+                                        val = xmlRand{tsk}.(fieldName);
+                                        val = val(randi(length(val)));
+                                        e{e_indx}.(fieldName) = val;
+                                    end
+                                end
+                                e = cell2mat(e);
+
+                                % send the trial parameters here, before adding
+                                % eParams to e (because eParams were sent already)
+                                % loop over nstim
+                                for I =1:numel(cnd)
+                                    sendCode(cnd(I)+32768); % send condition # in 32769-65535 range
+                                    sendStruct(e(I));
+                                end
+
+                                e = num2cell(e);
+                                for I = 1:numel(e)
+                                    e{I} = exCatstruct(xmlParams{tsk},e{I});
+                                    e{I}.('taskNum')=tsk;
+                                    e{I}.('currentTaskBlock')=j;
+                                    e{I}.('currentBlock')=blk;
+                                    e{I}.('currentCnd')=cnd(I);
+                                    e{I}.trialCounter = trialCounter;
+                                    e{I}.ordering = ordering;
+                                end
+                                e = cell2mat(e);
+
+                                % if desired, send an alignment pulse out the digital
+                                % port here
+                                if params.alignPulseEnabled
+                                    unixSendPulse(params.alignPulseChan,params.alignPulseDuration);
+                                end                    
+
+                                try
+                                    if isfield(e,'juiceX')
+                                        params.juiceX = e(1).juiceX;
+                                    end
+                                    trialResult = feval(e(1).exFileName,e); % CALLING THE EX FILE
+
+                                    msgAndWait('checkForAborts'); %just to check for aborts.
+                                catch ME %This block handles the cases when showex aborts...
+                                    %%% just throw it right away for now MS August 2021
+                                    %msgAndWait('prerethrow')
+                                    rethrow(ME); %kicks up to runexError function
+                                    %msgAndWait('postrethrow')
+                                    switch ME.identifier
+                                        case 'waitFor:aborted'
+                                            sendCode(codes.SHOWEX_ABORT);
+                                            trialMessage = 0;
+                                            trialResult = codes.SHOWEX_ABORT;
+                                            abortCounter = abortCounter+1;
+                                            if abortCounter>10
+                                                %kick up to higher-level try/catch to exit gracefully
+                                                error('RUNEX:tooManyAborts','Too many consecutive aborts'); 
+                                            end
+                                            msgAndWait('resume');
+                                        case 'exFunction:bci_aborted'
+                                            sendCode(codes.BCI_ABORT);
+                                            trialMessage = 0;
+                                            trialResult = codes.BCI_ABORT;
+                                            sendCode(codes.END_TRIAL); % send an official end trial code so that BCI analysis is able to sync the trial numbers
+                                            error('RUNEX:bciAbort','BCI computer is not responding');
+                                        otherwise %some error other than an abort
+                                            rethrow(ME); %kicks up to runexError function
+                                    end
+                                end
+
+                                %Scoring:
+
+                                trialResult(trialResult==1) = codes.CORRECT; %for backwards compatibility -ACS 23Oct2012
+                                trialResult(trialResult==2) = codes.BROKE_FIX; %for backwards compatibility
+                                trialResult(trialResult==3) = codes.IGNORED; %for backwards compatibility
+                                trialResultStrings = exDecode(trialResult(:));
+
+                                % Copy the exPrint data (meant to be written from
+                                % within an ex function) into trialData so it's printed
+                                % first some argument checking
+                                % should we also make sure there are no numeric values?
+                                if size(exPrint,2)~=1
+                                    warning('exPrint must be Nx1 - runex is overwriting it to avoid an error');
+                                    exPrint = cell(wins.trialData.exPrintLines,1);
+                                elseif size(exPrint,1)>wins.trialData.exPrintLines
+                                    warning('The size of the exPrint cell array was increased - runex is trimming it to avoid an error');
+                                    exPrint = exPrint(1:wins.trialData.exPrintLines,1);
+                                elseif size(exPrint,1)<wins.trialData.exPrintLines
+                                    warning('The size of the exPrint cell array was reduced - runex is overwriting it to avoid an error');
+                                    exPrint = cell(wins.trialData.exPrintLines,1);
+                                end
+                                % trialData user lines get exPrint copied in so it will print
+                                trialData(wins.trialData.userLine:wins.trialData.lines) = exPrint;
+
+                                for ox = 1:numel(availableOutcomes) %new scoring -ACS 23Oct2012
+                                    if retry.(availableOutcomes{ox})
+                                        stats(ox) = stats(ox)+any(ismember(trialResultStrings,availableOutcomes{ox})); %only count these once per fix
+                                    else
+                                        stats(ox) = stats(ox)+sum(ismember(trialResultStrings,availableOutcomes{ox})); %sum these per fix
+                                    end
+                                    nOutcomesPerLine = 5; %for display purposes...
+                                    currentLine = wins.trialData.outcomesLine+floor((ox-1)/nOutcomesPerLine);
+                                    if mod(ox,nOutcomesPerLine)==1
+                                        trialData{currentLine}=sprintf('%i %s',stats(ox),availableOutcomes{ox});
+                                    else
+                                        trialData{currentLine} = [trialData{currentLine} sprintf(', %i %s',stats(ox),availableOutcomes{ox})];
+                                    end
+                                end
+
+                                msg('all_off');
+                                msgAndWait('rem_all');
+
+                                if trialMessage>-1
+                                    checked = false(size(cnd));
+                                    for ox = 1:numel(trialResultStrings)
+                                        checked(ox) = ~retry.(trialResultStrings{ox});
+                                    end
+                                    if any(checked)
+                                        trialCounter = trialCounter+sum(checked);
+                                        for cx = 1:numel(cnd)      %Not sure this is functioning in the intended way yet... -ACS
+                                            trialCodes{cnd(cx)}{end+1} = thisTrialCodes;
+                                        end
+                                    end
+                                    switch xmlParams.badTrialHandling %added 23Oct2012 -ACS
+                                        case 'noRetry' %don't retry bad trials
+                                            ordering(1:numel(cnd)) = []; %just erase the current cnd from ordering and don't look back...
+                                        case 'immediateRetry'
+                                            ordering(find(checked)) = []; %tick off the good trials and feed back the ordering as is. This option really only makes sense if nStimPerFix==1.
+                                        case 'reshuffle'
+                                            ordering(find(checked)) = []; %tick off the good trials
+                                            ordering = ordering(randperm(numel(ordering))); %reshuffle the remaining conditions
+                                        case 'endOfBlock'
+                                            needsRetried = ordering(find(~checked)); %trials that haven't been checked off
+                                            ordering = [ordering(numel(cnd)+1:end) needsRetried]; %take the conditions that haven't been attempted yet, and add the conditions needing another try to the end
+                                        otherwise
+                                            error('RUNEX:unknownBadTrial','Unrecognized option for badTrialHandling, quit to diagnose.'); %kicks up to runexError
+                                    end
+                                end
+
+                                msgAndWait('ack'); % sync up before ending the trial
+                                sendCode(codes.END_TRIAL);
+
+                                % Global history of trial codes
+                                %
+                                % NOTE: These codes are all referenced relative to the time
+                                % of the trial start (code '1') because of the first line
+                                % below. The "global time" for the start of each trial is
+                                % stored in allCodes.startTime
+                                thisTrialCodes(:,2) = thisTrialCodes(:,2) - thisTrialCodes(find(thisTrialCodes(:,1)==1,1,'first'),2);
+                                allCodes{end}.cnd = cnd;
+                                allCodes{end}.trialResult = trialResult;
+                                allCodes{end}.codes = thisTrialCodes;
+
+                                % Write allCodes to a file to keep track of data on Ex side
+                                % Can use the behav struct to keep track of behavior if you
+                                % like. Contents of behav are user-defined in ex-functions
+                                if params.writeFile
+                                    save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','xmlParams','-v6'); % '-v6' for speed -MAS 27Feb2016
+                                end
+
+                                if trialMessage == -1
+                                    break;
+                                end
+                            end
+
+                            if trialMessage == -1
+                                currentBlock = blk;
+                                currentTaskBlock = j;
+                                pauseFlag = true;
+                                break;
+                            else
+                                pauseFlag = false;
+                            end
+                            currentBlock = currentBlock + 1;
+                        end
                     end
                 end
-                
-                if trialMessage == -1
-                    currentBlock = j;
-                    pauseFlag = true;
-                    break;
-                else
-                    pauseFlag = false;
-                end
-                currentBlock = currentBlock + 1;
+                currentTaskBlock = currentTaskBlock + 1;
             end
             matlabUDP2('send',sockets(1), 'q');
             trialData{wins.trialData.promptLine} = defaultRunexPrompt;
@@ -1624,7 +1659,7 @@ fclose all;
             if params.writeFile
                 if recordingTrueFalse
                     try
-                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName , outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     catch err
                         if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
                             trialData{wins.trialData.statusLine} = err.message;
