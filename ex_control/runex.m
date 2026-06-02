@@ -69,6 +69,8 @@ p = inputParser;
 p.addOptional('fullScreen',true,@islogical);
 p.addOptional('useDatabase',true,@islogical);
 p.addOptional('repeats',0,@(x) mod(x,1)==0 && (x>=0));
+p.addOptional('repeats_perTask',1,@(x) isnumeric(x) || iscell(x));
+p.addOptional('taskBlockType','block',@ischar);
 p.addOptional('saveMat',true,@islogical);
 p.addOptional('demoMode',false,@islogical);
 p.addOptional('sessionNumber',NaN,@(x) mod(x,1)==0 && (x>=0));
@@ -80,6 +82,8 @@ useDatabase = p.Results.useDatabase;
 repeats = p.Results.repeats;
 saveMat = p.Results.saveMat;
 demoMode = p.Results.demoMode;
+%nTaskBlocks = p.Results.nTaskBlocks;
+%taskBlockType = p.Results.taskBlockType;
 
 if demoMode
     params.getEyes = 0;
@@ -88,7 +92,7 @@ if demoMode
     params.getSpikes = 0;
     params.writeFile = 0;
     useDatabase = false;
-    fullScreen = false;deleted:    xml/ANI_blocked_pursuitsacc.xml
+    fullScreen = false;    
 
     saveMat = false;
     warning('Ex is running in Demo Mode. Many features are disabled.');
@@ -148,7 +152,8 @@ params.machine = lower(deblank(cell2mat(regexp(params.machine,'^[^\.]+','match')
 while isempty(params.machine)
     [~,params.machine] = system('hostname'); %save name of control machine with data
     params.machine = lower(deblank(cell2mat(regexp(params.machine,'^[^\.]+','match'))));
-end
+end% read in ex_ Function to text to be saved w/ the .mat outfile
+            
 assert(~isempty(params.machine),'Machine name must not be empty'); 
 assert(sum(isspace(params.machine))==0,'Machine name must not have spaces');
 
@@ -334,20 +339,41 @@ end
 assert(isempty(strfind(params.machine,'_')),'Found an underscore');
 
 %% read the XML file
+if iscell(xmlFile)
+    [expt, xmlParams, xmlRand, exFileText] = deal(cell(size(xmlFile)));
+end
 try
-    [expt, xmlParams, xmlRand, xmlGlobals] = readExperiment(xmlFile,params.SubjectID,params.machine);
-    xmlParams.xmlFile = xmlFile;
-    
-    % read in ex_ Function to text to be saved w/ the .mat outfile
-    exFileString = [xmlParams.exFileName,'.m'];
-    exfid=fopen(exFileString,'r');
-    if exfid == -1
-        error('Cannot open file %s',exFileString);
+    if ~iscell(xmlFile)
+        [expt, xmlParams, xmlRand, xmlGlobals] = readExperiment(xmlFile,params.SubjectID,params.machine);
+        
+        % read in ex_ Function to text to be saved w/ the .mat outfile
+        exFileString = [xmlParams.exFileName,'.m'];
+        exfid=fopen(exFileString,'r');
+        if exfid == -1
+            error('Cannot open file %s',exFileString);
+        end
+        exFileText = fscanf(exfid,'%c',inf);
+        fclose(exfid);
+        
+        xmlParams.xmlFile = xmlFile;
+
+    else
+        for xx = 1:numel(xmlFile)
+            [expt{xx}, xmlParams{xx}, xmlRand{xx}, xmlGlobals] = readExperiment(xmlFile{xx},params.SubjectID,params.machine);
+        
+            % read in ex_ Function to text to be saved w/ the .mat outfile
+            exFileString = [xmlParams{xx}.exFileName,'.m'];
+            exfid=fopen(exFileString,'r');
+            if exfid == -1
+                error('Cannot open file %s',exFileString);
+            end
+            exFileText{xx} = fscanf(exfid,'%c',inf);
+            fclose(exfid);
+            
+            xmlParams{xx}.xmlFile = xmlFile{xx};
+        end
+        
     end
-    exFileText = fscanf(exfid,'%c',inf);
-    fclose(exfid);
-    
-    
     
 catch ME
     fprintf(ME.message);
@@ -359,15 +385,28 @@ disp(['Finished reading subject-specific XML file for ',params.SubjectID]);
 disp(['Finished reading rig-specific XML file for ',params.machine]);
 
 params = exCatstruct(params,xmlGlobals); %concatenate - subject globals overwrite rig globals which in turn overwrite default globals
-xmlParams = exCatstruct(xmlParams,expt{1});
 
-switch class(xmlParams.bgColor)
-    case 'char'
-        xmlParams.bgColor = str2num(xmlParams.bgColor); %#ok<ST2NM>
-    otherwise
-        %do nothing
+if ~iscell(xmlParams)
+    xmlParams = exCatstruct(xmlParams,expt{1});
+
+    switch class(xmlParams.bgColor)
+        case 'char'
+            xmlParams.bgColor = str2num(xmlParams.bgColor); %#ok<ST2NM>
+        otherwise
+            %do nothing
+    end
+else
+    for xx = 1:numel(xmlParams)
+        xmlParams{xx} = exCatstruct(xmlParams{xx},expt{xx}{1});
+
+        switch class(xmlParams{xx}.bgColor)
+            case 'char'
+                xmlParams{xx}.bgColor = str2num(xmlParams{xx}.bgColor); %#ok<ST2NM>
+            otherwise
+                %do nothing
+        end
+    end
 end
-
 
 %% opening up chatter with the data computer
 % this needs to happen after the XML params have been loaded for the IP
@@ -456,9 +495,17 @@ calibration = [];
 allCodes = cell(0); % for storing the all the trial codes and results
 behav = struct(); % behav is a struct for user data to be written by the ex-files
 behav.frameDrop = [];
-trialCodes = cell(length(expt),1);
-for i = 1:length(expt)
-    trialCodes{i} = cell(0);
+
+if ~iscell(xmlParams)
+    trialCodes = cell(length(expt),1);
+    for i = 1:length(expt)
+        trialCodes{i} = cell(0);
+    end
+else
+    trialCodes = cell(sum(cellfun(@numel, expt, 'uni', 1)),1);
+    for i = 1:numel(trialCodes)
+        trialCodes{i} = cell(0);
+    end
 end
 
 %set 'params' defaults:
@@ -470,17 +517,34 @@ eyeHistoryCurrentPos = 1;
 currentBlock = 1;
 pauseFlag = false;
 if repeats > 0 % if repeats > 0 the user passed it in at the command line, otherwise use what the XML file says
-    xmlParams.rpts = repeats;
+    if ~iscell(xmlParams)
+        xmlParams.rpts = repeats;
+    else
+        for xx = 1:numel(xmlParams)
+            xmlParams{xx}.rpts = repeats;
+        end
+    end
 end
 
 %eParams defaults: -ACS 23Oct2012
-if ~isfield(xmlParams,'nStimPerFix'),xmlParams.nStimPerFix=1;end
-if ~isfield(xmlParams,'blockRandomize'),xmlParams.blockRandomize=true;end
-if ~isfield(xmlParams,'conditionFrequency'),xmlParams.conditionFrequency='uniform';end
-if ~isfield(xmlParams,'numBlocksPerRandomization'),xmlParams.numBlocksPerRandomization=1;end
-if ~isfield(xmlParams,'exFileControl'),xmlParams.exFileControl='no';end
-if ~isfield(xmlParams,'badTrialHandling'),xmlParams.badTrialHandling='reshuffle';end %options are 'noRetry','immediateRetry','reshuffle','endOfBlock'
-
+if ~iscell(xmlParams)
+    if ~isfield(xmlParams,'nStimPerFix'),xmlParams.nStimPerFix=1;end
+    if ~isfield(xmlParams,'blockRandomize'),xmlParams.blockRandomize=true;end
+    if ~isfield(xmlParams,'conditionFrequency'),xmlParams.conditionFrequency='uniform';end
+    if ~isfield(xmlParams,'numBlocksPerRandomization'),xmlParams.numBlocksPerRandomization=1;end
+    if ~isfield(xmlParams,'exFileControl'),xmlParams.exFileControl='no';end
+    if ~isfield(xmlParams,'badTrialHandling'),xmlParams.badTrialHandling='reshuffle';end %options are 'noRetry','immediateRetry','reshuffle','endOfBlock'
+else
+    for xx = 1:numel(xmlParams)
+        if ~isfield(xmlParams{xx},'nStimPerFix'),xmlParams{xx}.nStimPerFix=1;end
+        if ~isfield(xmlParams{xx},'blockRandomize'),xmlParams{xx}.blockRandomize=true;end
+        if ~isfield(xmlParams{xx},'conditionFrequency'),xmlParams{xx}.conditionFrequency='uniform';end
+        if ~isfield(xmlParams{xx},'numBlocksPerRandomization'),xmlParams{xx}.numBlocksPerRandomization=1;end
+        if ~isfield(xmlParams{xx},'exFileControl'),xmlParams{xx}.exFileControl='no';end
+        if ~isfield(xmlParams{xx},'badTrialHandling'),xmlParams{xx}.badTrialHandling='reshuffle';end %options are 'noRetry','immediateRetry','reshuffle','endOfBlock'
+    end
+ end
+    
 %retry defaults: -ACS 19Dec2012
 %By default, the condition is retried for every outcome except 'correct',
 %'withhold' (assuming that means a correct withhold), and 'saccade' (e.g.,
@@ -509,12 +573,24 @@ retry = struct('CORRECT',       0,...
     'BCI_MISSED',    1,...
     'BACKGROUND_PROCESS_TRIAL', 1);
 
-allFields = fieldnames(xmlParams);
-retryFields = cellfun(@cell2mat,regexp(allFields,'(?<=retry_)\w*','match'),'uniformoutput',0);
-isRetryField = ~cellfun(@isempty,retryFields);
-retryFields = retryFields(isRetryField);
-for fx = 1:numel(retryFields)
-    retry.(retryFields{fx}) = xmlParams.(['retry_' retryFields{fx}]);
+if ~iscell(xmlParams)
+    allFields = fieldnames(xmlParams);
+    retryFields = cellfun(@cell2mat,regexp(allFields,'(?<=retry_)\w*','match'),'uniformoutput',0);
+    isRetryField = ~cellfun(@isempty,retryFields);
+    retryFields = retryFields(isRetryField);
+    for fx = 1:numel(retryFields)
+        retry.(retryFields{fx}) = xmlParams.(['retry_' retryFields{fx}]);
+    end
+else
+    for xx = 1:numel(xmlParams)
+        allFields = fieldnames(xmlParams{xx});
+        retryFields = cellfun(@cell2mat,regexp(allFields,'(?<=retry_)\w*','match'),'uniformoutput',0);
+        isRetryField = ~cellfun(@isempty,retryFields);
+        retryFields = retryFields(isRetryField);
+        for fx = 1:numel(retryFields)
+            retry.(retryFields{fx}) = xmlParams{xx}.(['retry_' retryFields{fx}]);
+        end
+    end
 end
 availableOutcomes = fieldnames(retry);
 stats = zeros(numel(availableOutcomes),1);
@@ -589,7 +665,16 @@ msgAndWait('eval_str if ~logical(exist(sv.localDir,''dir'')), mkdir(sv.localDir)
 msgAndWait('eval_str addpath(sv.localDir);'); %add the directory to the path on the display side
 
 %% define default outfile name and turn on/off saving based on input param
-[~,xmlname,~] = fileparts(xmlFile);
+if ~iscell(xmlFile)
+    [~,xmlname,~] = fileparts(xmlFile);
+else
+    xmlname = cell(1,numel(xmlFile));
+    for xx = 1:numel(xmlFile)
+        [~,xmlname{xx},~] = fileparts(xmlFile{xx});
+    end
+    xmlname = strjoin(xmlname, '_');
+    xmlParams_temp.xmlFile = xmlname;
+end
 defaultoutfile=[params.SubjectID,'_',params.sessionNumber,'_',datestr(now, 'yyyy.mmm.DD.HH.MM.SS'),'_',xmlname,'.mat'];
 if saveMat
     outfile=defaultoutfile;
@@ -728,9 +813,17 @@ localCalibrationFilename = fullfile(params.localExDir,'control',localCalibration
 if params.getEyes
     if params.writeFile
         [~,outfilename,outfileext] = fileparts(outfile);
-        trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ', Filename: ' outfilename outfileext];
+        if ~iscell(xmlFile)
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ', Filename: ' outfilename outfileext];
+        else
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlname ', Filename: ' outfilename outfileext];
+        end
     else 
-        trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' ; NOT RECORDING DATA'];
+        if ~iscell(xmlFile)
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' ; NOT RECORDING DATA'];
+        else
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlname ' ; NOT RECORDING DATA'];
+        end
         wins.trialData.lineColor(wins.trialData.subjectLine,:) = [150,0,0];
     end
     if exist(localCalibrationFilename,'file')
@@ -742,9 +835,17 @@ if params.getEyes
 else
     if params.writeFile
         [~,outfilename,outfileext] = fileparts(outfile);
-        trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' (MOUSE MODE), Filename: ' outfilename outfileext];
+        if ~iscell(xmlFile)
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' (MOUSE MODE), Filename: ' outfilename outfileext];
+        else
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlname ' (MOUSE MODE), Filename: ' outfilename outfileext];
+        end
     else
-        trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' (MOUSE MODE); NOT RECORDING DATA'];
+        if ~iscell(xmlFile)
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlFile ' (MOUSE MODE); NOT RECORDING DATA'];
+        else
+            trialData{wins.trialData.subjectLine} = ['Subject: ' upper(params.SubjectID) ' - ' xmlname ' (MOUSE MODE); NOT RECORDING DATA'];
+        end
         wins.trialData.lineColor(wins.trialData.subjectLine,:) = [150,0,0];
     end
     load mouseModeCalibration
@@ -784,7 +885,11 @@ Screen('CopyWindow',wins.voltageBG,wins.voltage,wins.voltageDim,wins.voltageDim)
 drawTrialData();
 
 % ask the display to change to the specified background color
-msgAndWait('bg_color %d %d %d',xmlParams.bgColor);
+if ~iscell(xmlParams)
+    msgAndWait('bg_color %d %d %d',xmlParams.bgColor);
+else
+    msgAndWait('bg_color %d %d %d',xmlParams{1}.bgColor); % stable background for now - KKN
+end
 
 %% Start a keyboard queue for user input
 KbQueueCreate;
@@ -793,15 +898,19 @@ KbQueueStart;
 %% save experiment run to database
 % this needs to happen last, as it potentially requires drawing to the
 % screen if there's a session number ambiguity
-if useDatabase
-    [params.sessionNumber, sessionNotes] = writeExperimentSessionToDatabase(sqlDb, params);
-    disp(['Found session number ',num2str(params.sessionNumber),' in database']);
-    notes = sessionNotes;
-    if params.writeFile
-        writeExperimentInfoToDatabase(params.sessionNumber, xmlParams, outfilename)
-        notes = sprintf('%s\n%s\n', notes, outfilename);
-        sqlDb.exec(sprintf('UPDATE experiment_session SET notes = "%s" WHERE session_number = %d AND animal = "%s"', notes, params.sessionNumber, params.SubjectID));
+if ~iscell(xmlParams)
+    if useDatabase
+        [params.sessionNumber, sessionNotes] = writeExperimentSessionToDatabase(sqlDb, params);
+        disp(['Found session number ',num2str(params.sessionNumber),' in database']);
+        notes = sessionNotes;
+        if params.writeFile
+            writeExperimentInfoToDatabase(params.sessionNumber, xmlParams, outfilename)
+            notes = sprintf('%s\n%s\n', notes, outfilename);
+            sqlDb.exec(sprintf('UPDATE experiment_session SET notes = "%s" WHERE session_number = %d AND animal = "%s"', notes, params.sessionNumber, params.SubjectID));
+        end
     end
+else
+    % Not setup yet to handle multiple xmls - KKN
 end
 
 %% Keyboard events handling loop:
@@ -842,13 +951,25 @@ while true
                 % the BCI *requires* the NEV to be recorded (generally) so
                 % we're ensuring that here...
                 if params.bciEnabled && ~recordingTrueFalse
-                    [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                    if ~iscell(xmlParams)
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                    else
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                    end
                 end
-                exRunExperiment; % see experimental control subfunction
+                if ~iscell(xmlParams)
+                    exRunExperiment; % see experimental control subfunction
+                else
+                    exRunExperiment_multiTask; % see experimental control subfunction
+                end
             case 'r'
                 if params.writeFile
                     try
-                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        if ~iscell(xmlParams)
+                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        else
+                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        end
                     catch err
                         if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
                             trialData{wins.trialData.statusLine} = err.message;
@@ -863,13 +984,22 @@ while true
                 if params.writeFile
                     trialDataWriteOut = cellfun(@(x) char(x), trialData, 'uni', 0);
                     if ~isempty(sqlDb)
-                        writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
-                        %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
+                        if ~iscell(xmlParams)
+                            writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
+                            %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
+                        else
+                            writeExperimentInfoToDatabase([], xmlParams_temp, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
+                            %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
+                        end
                     end
                     % shut off recording
                     if recordingTrueFalse
                         try
-                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                            if ~iscell(xmlParams)
+                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                            else
+                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                            end
                         catch err
                             if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
                                 trialData{wins.trialData.statusLine} = err.message;
@@ -898,7 +1028,13 @@ end
 %% Clean up on exit:
 
 % clear persistent variables
-clear( xmlParams.exFileName )
+if ~iscell(xmlParams)
+    clear( xmlParams.exFileName )
+else
+    for xx = 1:numel(xmlParams)
+       clear( xmlParams{xx}.exFileName ) 
+    end
+end
 
 % Reset Priority and Verbosity, close sound
 cleanUp();
@@ -944,7 +1080,290 @@ fclose all;
         persistent ordering trialCounter %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
         try
             % set the background color here
-            msgAndWait('bg_color %d %d %d',xmlParams.bgColor);            
+            msgAndWait('bg_color %d %d %d',xmlParams.bgColor);    
+            
+            % set the trialTic here and initialize thisTrialCodes so that this
+            % first sendStruct call has valid times and stores the codes
+            % properly. the flag keeps us from resetting the tic below for just
+            % this one trial
+            trialTic = tic;
+            thisTrialCodes = [];
+            resetTicFlag = 0;
+            sendStruct(exCatstruct(xmlParams,params,'sorted'));
+            matlabUDP2('send', sockets(1),'stim');
+            
+            trialMessage = 0;
+            
+            if currentBlock > xmlParams.rpts
+                currentBlock = 1;
+            end
+            
+            for j = currentBlock:xmlParams.rpts
+                
+                if ~pauseFlag
+                    ordering = createOrdering(expt,...
+                        'blockRandomize',xmlParams.blockRandomize,...
+                        'conditionFrequency',xmlParams.conditionFrequency,...
+                        'numBlocksPerRandomization',xmlParams.numBlocksPerRandomization,...
+                        'exFileControl',xmlParams.exFileControl); %-ACS 23Oct2012
+                    trialCounter = 1;
+                end
+                if any(ordering<1), ordering = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
+                
+                abortCounter = 0;
+                while ~isempty(ordering)
+                    if any(ordering<1), ordering = []; break; end
+                    cnd = ordering(1:min(xmlParams.nStimPerFix,numel(ordering)));
+                                       
+                    % only set the trialTic for trials that aren't immediately
+                    % following the 's' command
+                    if resetTicFlag
+                        trialTic = tic;
+                        thisTrialCodes = [];
+                    else
+                        resetTicFlag = 1;
+                    end
+
+                    if exist('trialResultStrings','var')
+                        trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                    else
+                        trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
+                    end
+                    trialData{wins.trialData.promptLine} = runningPrompt;
+                    drawTrialData();
+                    
+                    % setup the allCodes struct for this trial
+                    allCodes{end+1} = struct(); %#ok<AGROW>
+                    % This value should be as close as possible to the time
+                    % that code 1 is sent, thus allowing us to recreate global
+                    % time.
+                    allCodes{end}.startTime = datestr(now,'HH.MM.SS.FFF');
+                    sendCode(codes.START_TRIAL);
+                    
+                    % e needs to be a cell array or struct array  *****
+                    e = expt(cnd);
+                    
+                    %                     if isfield(e{1},'bgColor'), %change the bg_color for this trial (set of stimuli)...
+                    %                         msg('bg_color %d %d %d',e{1}.);
+                    %                     end;
+                    fn = fieldnames(xmlRand);
+                    for e_indx = 1:length(e)
+                        for f = 1:length(fn)
+                            fieldName = fn{f};
+                            val = xmlRand.(fieldName);
+                            val = val(randi(length(val)));
+                            e{e_indx}.(fieldName) = val;
+                        end
+                    end
+                    e = cell2mat(e);
+                    
+                    % send the trial parameters here, before adding
+                    % eParams to e (because eParams were sent already)
+                    % loop over nstim
+                    for I =1:numel(cnd)
+                        sendCode(cnd(I)+32768); % send condition # in 32769-65535 range
+                        sendStruct(e(I));
+                    end
+                    
+                    e = num2cell(e);
+                    for I = 1:numel(e)
+                        e{I} = exCatstruct(xmlParams,e{I});
+                        e{I}.('currentBlock')=j;
+                        e{I}.('currentCnd')=cnd(I);
+                        e{I}.trialCounter = trialCounter;
+                        e{I}.ordering = ordering;
+                    end
+                    e = cell2mat(e);
+                    
+                    % if desired, send an alignment pulse out the digital
+                    % port here
+                    if params.alignPulseEnabled
+                        unixSendPulse(params.alignPulseChan,params.alignPulseDuration);
+                    end                    
+                    
+                    try
+                        if isfield(e,'juiceX')
+                            params.juiceX = e(1).juiceX;
+                        end
+                        trialResult = feval(e(1).exFileName,e); % CALLING THE EX FILE
+                        
+                        msgAndWait('checkForAborts'); %just to check for aborts.
+                    catch ME %This block handles the cases when showex aborts...
+                        %%% just throw it right away for now MS August 2021
+                        %msgAndWait('prerethrow')
+                        rethrow(ME); %kicks up to runexError function
+                        %msgAndWait('postrethrow')
+                        switch ME.identifier
+                            case 'waitFor:aborted'
+                                sendCode(codes.SHOWEX_ABORT);
+                                trialMessage = 0;
+                                trialResult = codes.SHOWEX_ABORT;
+                                abortCounter = abortCounter+1;
+                                if abortCounter>10
+                                    %kick up to higher-level try/catch to exit gracefully
+                                    error('RUNEX:tooManyAborts','Too many consecutive aborts'); 
+                                end
+                                msgAndWait('resume');
+                            case 'exFunction:bci_aborted'
+                                sendCode(codes.BCI_ABORT);
+                                trialMessage = 0;
+                                trialResult = codes.BCI_ABORT;
+                                sendCode(codes.END_TRIAL); % send an official end trial code so that BCI analysis is able to sync the trial numbers
+                                error('RUNEX:bciAbort','BCI computer is not responding');
+                            otherwise %some error other than an abort
+                                rethrow(ME); %kicks up to runexError function
+                        end
+                    end
+                    
+                    %Scoring:
+                    
+                    trialResult(trialResult==1) = codes.CORRECT; %for backwards compatibility -ACS 23Oct2012
+                    trialResult(trialResult==2) = codes.BROKE_FIX; %for backwards compatibility
+                    trialResult(trialResult==3) = codes.IGNORED; %for backwards compatibility
+                    trialResultStrings = exDecode(trialResult(:));
+                    
+                    % Copy the exPrint data (meant to be written from
+                    % within an ex function) into trialData so it's printed
+                    % first some argument checking
+                    % should we also make sure there are no numeric values?
+                    if size(exPrint,2)~=1
+                        warning('exPrint must be Nx1 - runex is overwriting it to avoid an error');
+                        exPrint = cell(wins.trialData.exPrintLines,1);
+                    elseif size(exPrint,1)>wins.trialData.exPrintLines
+                        warning('The size of the exPrint cell array was increased - runex is trimming it to avoid an error');
+                        exPrint = exPrint(1:wins.trialData.exPrintLines,1);
+                    elseif size(exPrint,1)<wins.trialData.exPrintLines
+                        warning('The size of the exPrint cell array was reduced - runex is overwriting it to avoid an error');
+                        exPrint = cell(wins.trialData.exPrintLines,1);
+                    end
+                    % trialData user lines get exPrint copied in so it will print
+                    trialData(wins.trialData.userLine:wins.trialData.lines) = exPrint;
+                    
+                    for ox = 1:numel(availableOutcomes) %new scoring -ACS 23Oct2012
+                        if retry.(availableOutcomes{ox})
+                            stats(ox) = stats(ox)+any(ismember(trialResultStrings,availableOutcomes{ox})); %only count these once per fix
+                        else
+                            stats(ox) = stats(ox)+sum(ismember(trialResultStrings,availableOutcomes{ox})); %sum these per fix
+                        end
+                        nOutcomesPerLine = 5; %for display purposes...
+                        currentLine = wins.trialData.outcomesLine+floor((ox-1)/nOutcomesPerLine);
+                        if mod(ox,nOutcomesPerLine)==1
+                            trialData{currentLine}=sprintf('%i %s',stats(ox),availableOutcomes{ox});
+                        else
+                            trialData{currentLine} = [trialData{currentLine} sprintf(', %i %s',stats(ox),availableOutcomes{ox})];
+                        end
+                    end
+                    
+                    msg('all_off');
+                    msgAndWait('rem_all');
+                    
+                    if trialMessage>-1
+                        checked = false(size(cnd));
+                        for ox = 1:numel(trialResultStrings)
+                            checked(ox) = ~retry.(trialResultStrings{ox});
+                        end
+                        if any(checked)
+                            trialCounter = trialCounter+sum(checked);
+                            for cx = 1:numel(cnd)      %Not sure this is functioning in the intended way yet... -ACS
+                                trialCodes{cnd(cx)}{end+1} = thisTrialCodes;
+                            end
+                        end
+                        switch xmlParams.badTrialHandling %added 23Oct2012 -ACS
+                            case 'noRetry' %don't retry bad trials
+                                ordering(1:numel(cnd)) = []; %just erase the current cnd from ordering and don't look back...
+                            case 'immediateRetry'
+                                ordering(find(checked)) = []; %tick off the good trials and feed back the ordering as is. This option really only makes sense if nStimPerFix==1.
+                            case 'reshuffle'
+                                ordering(find(checked)) = []; %tick off the good trials
+                                ordering = ordering(randperm(numel(ordering))); %reshuffle the remaining conditions
+                            case 'endOfBlock'
+                                needsRetried = ordering(find(~checked)); %trials that haven't been checked off
+                                ordering = [ordering(numel(cnd)+1:end) needsRetried]; %take the conditions that haven't been attempted yet, and add the conditions needing another try to the end
+                            otherwise
+                                error('RUNEX:unknownBadTrial','Unrecognized option for badTrialHandling, quit to diagnose.'); %kicks up to runexError
+                        end
+                    end
+
+                    msgAndWait('ack'); % sync up before ending the trial
+                    sendCode(codes.END_TRIAL);
+                    
+                    % Global history of trial codes
+                    %
+                    % NOTE: These codes are all referenced relative to the time
+                    % of the trial start (code '1') because of the first line
+                    % below. The "global time" for the start of each trial is
+                    % stored in allCodes.startTime
+                    thisTrialCodes(:,2) = thisTrialCodes(:,2) - thisTrialCodes(find(thisTrialCodes(:,1)==1,1,'first'),2);
+                    allCodes{end}.cnd = cnd;
+                    allCodes{end}.trialResult = trialResult;
+                    allCodes{end}.codes = thisTrialCodes;
+                    
+                    % Write allCodes to a file to keep track of data on Ex side
+                    % Can use the behav struct to keep track of behavior if you
+                    % like. Contents of behav are user-defined in ex-functions
+                    if params.writeFile
+                        save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','xmlParams','-v6'); % '-v6' for speed -MAS 27Feb2016
+                    end
+                    
+                    if trialMessage == -1
+                        break;
+                    end
+                end
+                
+                if trialMessage == -1
+                    currentBlock = j;
+                    pauseFlag = true;
+                    break;
+                else
+                    pauseFlag = false;
+                end
+                currentBlock = currentBlock + 1;
+            end
+            matlabUDP2('send',sockets(1), 'q');
+            trialData{wins.trialData.promptLine} = defaultRunexPrompt;
+            drawTrialData();
+        catch err %Graceful error handling within runex
+            trialData{wins.trialData.promptLine} = defaultRunexPrompt;
+            trialData{wins.trialData.statusLine} = sprintf('Error: %s. Quit to diagnose.', err.message);
+            trialMessage = -1;
+            msg('all_off');
+            drawTrialData();
+            disp(['************ ERROR: ' err.message ' **********']);
+            for stk = 1:length(err.stack)
+                fprintf('In ==> %s %s %i\n',err.stack(stk).file,err.stack(stk).name,err.stack(stk).line);
+            end
+            % shut off BCI
+            if params.bciEnabled
+                matlabUDP2('send', bciSockets.sender, 'bciEnd')
+            end
+
+            % shut off recording
+            if params.writeFile
+                if recordingTrueFalse
+                    try
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                    catch err
+                        if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
+                            trialData{wins.trialData.statusLine} = err.message;
+                            trialData{wins.trialData.promptLine} = defaultRunexPrompt;
+                            drawTrialData();
+                        else
+                            error(err.identifier, err.message)
+                        end
+                    end
+                end
+
+            end
+            beep;
+        end
+    end
+
+%% MULTI-TASK FUNCTIONALITY - KKN 06/2026
+    function exRunExperiment_multiTask
+        persistent ordering trialCounter %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
+        try
+            % set the background color here
+            msgAndWait('bg_color %d %d %d',xmlParams.bgColor);    
             
             % set the trialTic here and initialize thisTrialCodes so that this
             % first sendStruct call has valid times and stores the codes
