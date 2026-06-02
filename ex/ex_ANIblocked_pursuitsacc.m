@@ -292,8 +292,6 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         % Find Jumpsize
 
-        disp(behav)
-
         e.jumpSize = (e.reactionTime/1000)*e.pursuitSpeed*e.jump;
 
         if isfield(behav, 'prevTrial')== false
@@ -332,7 +330,8 @@ function result = ex_ANIblocked_pursuitsacc(e)
 
         sendCode(codes.FIXATE);
         if isfield(e,'fixJuice')
-            if rand < e.fixJuice, giveJuice(1); end;
+            if rand < e.fixJuice, giveJuice(1); 
+            end
         end
 
         if ~waitForMS(e.pursuit_fixDuration,e.fixX,e.fixY,params.fixWinRad)
@@ -447,17 +446,37 @@ function result = ex_ANIblocked_pursuitsacc(e)
     %% POST TRIAL STUFF %%
 
    %NOTE: counts all trials, including broke fix and incorrect
+   
+   behav.prevTrial = thisTrialAngle;
+   behav.trialnum = behav.trialnum + 1 ;
+   
+   % if saccade and pursuit trials are different size
+   if behav.thisTrialType == 0 % if we're on a saccade block
+       if behav.trialnum == e.saccadeBlockSize
+           behav.trialnum = 0 ;
+           behav.thisTrialType = 1;
+       else
+           behav.thisTrialType = 0;
+       end
+   else %if we're on pursuit block
+       if behav.trialnum == e.pursuitBlockSize
+           behav.trialnum = 0;
+           behav.thisTrialType = 0;
+       else
+           behav.thisTrialType = 1;
+       end
+   end
+    
+   
+   
+% % if saccade and pursuit blocks are the same size
 
-    behav.prevTrial = thisTrialAngle;
-
-    behav.trialnum  = behav.trialnum + 1;
-
-    if behav.trialnum > e.blocksize
-        behav.trialnum = 0;
-        if behav.thisTrialType == 0
-            behav.thisTrialType = 1;
-        else
-            behav.thisTrialType = 0;
-        end
-    end
+%     if behav.trialnum > e.blocksize
+%         behav.trialnum = 0;
+%         if behav.thisTrialType == 0
+%             behav.thisTrialType = 1;
+%         else
+%             behav.thisTrialType = 0;
+%         end
+%     end
     

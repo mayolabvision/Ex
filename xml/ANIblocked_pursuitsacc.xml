@@ -17,7 +17,7 @@
         <sacc_size>15</sacc_size> <!-- saccade target size -->
         <stimType>2002</stimType>
         <helperTargetColor>[0;0;255]</helperTargetColor>
-        
+        <saccadeBlockSize> [2] </saccadeBlockSize>
         <sacc_fixDuration>800</sacc_fixDuration>
         <targetDuration>200</targetDuration>
         <sacc_noFixTimeout>1000</sacc_noFixTimeout>
@@ -29,6 +29,7 @@
         <isi>300</isi>
         
         <!--Pursuit-specific parameters-->
+        <pursuitBlockSize> [1] </pursuitBlockSize>
         <reactionTime>110</reactionTime> <!-- This  should be specific to the monkey and in the monkeys subject file -->
         <pursuit_size>5</pursuit_size>      
         <pursuitDuration>900</pursuitDuration>

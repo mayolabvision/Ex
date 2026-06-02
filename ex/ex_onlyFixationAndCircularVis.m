@@ -1,4 +1,4 @@
-function result = onlyFixationAndCircularVis(e)
+ function result = onlyFixationAndCircularVis(e)
 % ex file: ex_onlyFixationAndCircularVis
 %
 % Fixation with stimulus presentation
@@ -24,7 +24,11 @@ global params codes behav;
 
 e = e(1); %in case more than one 'trial' is passed at a time...
 
-angularVelocity = (e(1).angularVelocity / e(1).eccentricity) * (180 / pi);
+angularVelocity = (e(1).angularVelocity / e(1).eccentricity) * (180 / pi); 
+% Line 27 is not part of the initial function. Discovered by SMW 2025/10/20.
+% I think it changes the stimulus into a-non angular velocity stimulus and
+% instead is constant distance across unit time, changing the relationship between angular velocity and the radius.
+% I'm not 100% sure it does that with how the stim file is coded and needs to be checked. Needs documentation - who did it, why, and when?
 
 objID = 2;
 % obj 1 is fix spot, diode attached to obj 2
