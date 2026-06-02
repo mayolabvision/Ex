@@ -69,7 +69,7 @@ p = inputParser;
 p.addOptional('fullScreen',true,@islogical);
 p.addOptional('useDatabase',true,@islogical);
 p.addOptional('repeats',0,@(x) mod(x,1)==0 && (x>=0));
-p.addOptional('repeats_perTask',0,@(x) isnumeric(x) || iscell(x));
+p.addOptional('repeats_perTask',1,@(x) isnumeric(x) || iscell(x));
 p.addOptional('taskBlockType','block',@ischar); % 'block' or interleaved'
 p.addOptional('saveMat',true,@islogical);
 p.addOptional('demoMode',false,@islogical);
@@ -374,9 +374,9 @@ try
             
             xmlParams{xx}.taskBlockType = taskBlockType;
             if isscalar(repeats_perTask)
-                xmlParams{xx}.rpts_perTask = repeats_perTask;
+                xmlParams{xx}.rptsPerTask = repeats_perTask;
             else
-                xmlParams{xx}.rpts_perTask = repeats_perTask{xx};
+                xmlParams{xx}.rptsPerTask = repeats_perTask{xx};
             end
         end
         
@@ -683,9 +683,9 @@ else
     xmlname = strjoin(xmlname, '_');
     xmlParams_temp.xmlFile = xmlname;
     
-    for xx = 1:numel(xmlFile)
-       xmlParams{xx}.tempName = xmlParams_temp; 
-    end
+%     for xx = 1:numel(xmlFile)
+%        xmlParams{xx}.tempName = xmlParams_temp; 
+%     end
 end
 defaultoutfile=[params.SubjectID,'_',params.sessionNumber,'_',datestr(now, 'yyyy.mmm.DD.HH.MM.SS'),'_',xmlname,'.mat'];
 if saveMat
@@ -966,7 +966,7 @@ while true
                     if ~iscell(xmlParams)
                         [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     else
-                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     end
                 end
                 if ~iscell(xmlParams)
@@ -980,7 +980,7 @@ while true
                         if ~iscell(xmlParams)
                             [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                         else
-                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                            [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                         end
                     catch err
                         if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
@@ -1000,7 +1000,7 @@ while true
                             writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
                             %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
                         else
-                            writeExperimentInfoToDatabase([], xmlParams{xx}.tempName, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
+                            writeExperimentInfoToDatabase([], xmlParams_temp, outfilename, 'experiment_results', strjoin(trialDataWriteOut([1:wins.trialData.userLine-1]), '\n'));
                             %writeExperimentInfoToDatabase([], xmlParams, outfilename, 'experiment_results', strjoin(trialDataWriteOut([2:3, 5:end]), '\n'));
                         end
                     end
@@ -1010,7 +1010,7 @@ while true
                             if ~iscell(xmlParams)
                                 [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                             else
-                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                                [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                             end
                         catch err
                             if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
@@ -1375,7 +1375,7 @@ fclose all;
         persistent ordering trialCounter %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
         try
             % set the initial background color here
-            msgAndWait('bg_color %d %d %d',xmlParams{1}.bgColor);    
+            msgAndWait('bg_color %d %d %d',xmlParams{1}.bgColor);   
             
             % set the trialTic here and initialize thisTrialCodes so that this
             % first sendStruct call has valid times and stores the codes
@@ -1405,12 +1405,14 @@ fclose all;
                 % Block of each task
                 if isequal(xmlParams{1}.taskBlockType, 'block')
                     for tsk = 1:numel(xmlParams)
+                        
+                        msgAndWait('bg_color %d %d %d',xmlParams{tsk}.bgColor);
                  
-                        if currentBlock > xmlParams{tsk}.rpts_perTask
+                        if currentBlock > xmlParams{tsk}.rptsPerTask
                             currentBlock = 1;
                         end
                         
-                        for blk = currentBlock:xmlParams{tsk}.rpts_perTask
+                        for blk = currentBlock:xmlParams{tsk}.rptsPerTask
                             if ~pauseFlag
                                 ordering = createOrdering(expt{tsk},...
                                     'blockRandomize',xmlParams{tsk}.blockRandomize,...
@@ -1436,9 +1438,9 @@ fclose all;
                                 end
 
                                 if exist('trialResultStrings','var')
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rpts_perTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
                                 else
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rpts_perTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
                                 end
                                 trialData{wins.trialData.promptLine} = runningPrompt;
                                 drawTrialData();
@@ -1581,7 +1583,7 @@ fclose all;
                                             trialCodes{cnd(cx)}{end+1} = thisTrialCodes;
                                         end
                                     end
-                                    switch xmlParams.badTrialHandling %added 23Oct2012 -ACS
+                                    switch xmlParams{tsk}.badTrialHandling %added 23Oct2012 -ACS
                                         case 'noRetry' %don't retry bad trials
                                             ordering(1:numel(cnd)) = []; %just erase the current cnd from ordering and don't look back...
                                         case 'immediateRetry'
@@ -1634,6 +1636,21 @@ fclose all;
                             currentBlock = currentBlock + 1;
                         end
                     end
+                else
+                    ordering = cell(1,numel(xmlParams));
+                    for tsk = 1:numel(xmlParams)
+                        if ~pauseFlag
+                            ordering{tsk} = createOrdering(expt{tsk},...
+                                'blockRandomize',xmlParams{tsk}.blockRandomize,...
+                                'conditionFrequency',xmlParams{tsk}.conditionFrequency,...
+                                'numBlocksPerRandomization',xmlParams{tsk}.numBlocksPerRandomization,...
+                                'exFileControl',xmlParams{tsk}.exFileControl); %-ACS 23Oct2012
+                            trialCounter = 1;
+                        end
+                        if any(ordering{tsk}<1), ordering{tsk} = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
+                    end
+                    
+                    abortCounter = 0;
                 end
                 currentTaskBlock = currentTaskBlock + 1;
             end
@@ -1644,7 +1661,7 @@ fclose all;
             trialData{wins.trialData.promptLine} = defaultRunexPrompt;
             trialData{wins.trialData.statusLine} = sprintf('Error: %s. Quit to diagnose.', err.message);
             trialMessage = -1;
-            msg('all_off');
+            msg('all_off');q
             drawTrialData();
             disp(['************ ERROR: ' err.message ' **********']);
             for stk = 1:length(err.stack)
@@ -1659,7 +1676,7 @@ fclose all;
             if params.writeFile
                 if recordingTrueFalse
                     try
-                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams{xx}.tempName , outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
+                        [recordingTrueFalse, defaultRunexPrompt] = exRecordExperiment(socketsDatComp, recordingTrueFalse, xmlParams_temp, outfilename, defaultRunexPrompt); % see recording subfunction that communicates with data computer
                     catch err
                         if strcmp(err.identifier, 'communication:waitForData:communicationFailWithDataComputer')
                             trialData{wins.trialData.statusLine} = err.message;
@@ -1890,9 +1907,17 @@ fclose all;
         params.getEyes = ~params.getEyes;
         if params.writeFile
             [~,outfilename,outfileext] = fileparts(outfile);
-            trialData{1} = sprintf('Subject: %s - %s%s, Filename: %s%s',upper(params.SubjectID),xmlFile,mmString,outfilename,outfileext);
+            if ~iscell(xmlFile)
+                trialData{1} = sprintf('Subject: %s - %s%s, Filename: %s%s',upper(params.SubjectID),xmlFile,mmString,outfilename,outfileext);
+            else
+                trialData{1} = sprintf('Subject: %s - %s%s, Filename: %s%s',upper(params.SubjectID),xmlname,mmString,outfilename,outfileext);
+            end
         else
-            trialData{1} = sprintf('Subject: %s - %s%s; NOT RECORDING DATA', upper(params.SubjectID), xmlFile, mmString);
+            if ~iscell(xmlFile)
+                trialData{1} = sprintf('Subject: %s - %s%s; NOT RECORDING DATA', upper(params.SubjectID), xmlFile, mmString);
+            else
+                trialData{1} = sprintf('Subject: %s - %s%s; NOT RECORDING DATA', upper(params.SubjectID), xmlname, mmString);
+            end
         end
         drawTrialData();
         setWindowBackground(wins.voltageBG);
