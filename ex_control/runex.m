@@ -1651,6 +1651,218 @@ fclose all;
                     end
                     
                     abortCounter = 0;
+                    while any(~cellfun(@isempty, ordering, 'uni', 1))
+                        taskNums = find(~cellfun(@isempty, ordering, 'uni', 1)==1);
+                        tsk = taskNums(randi(numel(taskNums)));
+                        
+                        msgAndWait('bg_color %d %d %d',xmlParams{tsk}.bgColor);
+                        
+                        if any(ordering{tsk}<1), ordering{tsk} = []; break; end
+                        cnd = ordering{tsk}(1:min(xmlParams{tsk}.nStimPerFix,numel(ordering{tsk})));
+
+                        % only set the trialTic for trials that aren't immediately
+                        % following the 's' command
+                        if resetTicFlag
+                            trialTic = tic;
+                            thisTrialCodes = [];
+                        else
+                            resetTicFlag = 1;
+                        end
+
+                        if exist('trialResultStrings','var')
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                        else
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd)];
+                        end
+                        trialData{wins.trialData.promptLine} = runningPrompt;
+                        drawTrialData();
+
+                        % setup the allCodes struct for this trial
+                        allCodes{end+1} = struct(); %#ok<AGROW>
+                        % This value should be as close as possible to the time
+                        % that code 1 is sent, thus allowing us to recreate global
+                        % time.
+                        allCodes{end}.startTime = datestr(now,'HH.MM.SS.FFF');
+                        sendCode(codes.START_TRIAL);
+
+                        % e needs to be a cell array or struct array  *****
+                        e = expt{tsk}(cnd);
+
+                        %                     if isfield(e{1},'bgColor'), %change the bg_color for this trial (set of stimuli)...
+                        %                         msg('bg_color %d %d %d',e{1}.);
+                        %                     end;
+                        fn = fieldnames(xmlRand{tsk});
+                        for e_indx = 1:length(e)
+                            for f = 1:length(fn)
+                                fieldName = fn{f};
+                                val = xmlRand{tsk}.(fieldName);
+                                val = val(randi(length(val)));
+                                e{e_indx}.(fieldName) = val;
+                            end
+                        end
+                        e = cell2mat(e);
+
+                        % send the trial parameters here, before adding
+                        % eParams to e (because eParams were sent already)
+                        % loop over nstim
+                        for I =1:numel(cnd)
+                            sendCode(cnd(I)+32768); % send condition # in 32769-65535 range
+                            sendStruct(e(I));
+                        end
+
+                        e = num2cell(e);
+                        for I = 1:numel(e)
+                            e{I} = exCatstruct(xmlParams{tsk},e{I});
+                            e{I}.('taskNum')=tsk;
+                            e{I}.('currentTaskBlock')=j;
+                            e{I}.('currentCnd')=cnd(I);
+                            e{I}.trialCounter = trialCounter;
+                            e{I}.ordering = ordering{tsk};
+                        end
+                        e = cell2mat(e);
+
+                        % if desired, send an alignment pulse out the digital
+                        % port here
+                        if params.alignPulseEnabled
+                            unixSendPulse(params.alignPulseChan,params.alignPulseDuration);
+                        end                    
+
+                        try
+                            if isfield(e,'juiceX')
+                                params.juiceX = e(1).juiceX;
+                            end
+                            trialResult = feval(e(1).exFileName,e); % CALLING THE EX FILE
+
+                            msgAndWait('checkForAborts'); %just to check for aborts.
+                        catch ME %This block handles the cases when showex aborts...
+                            %%% just throw it right away for now MS August 2021
+                            %msgAndWait('prerethrow')
+                            rethrow(ME); %kicks up to runexError function
+                            %msgAndWait('postrethrow')
+                            switch ME.identifier
+                                case 'waitFor:aborted'
+                                    sendCode(codes.SHOWEX_ABORT);
+                                    trialMessage = 0;
+                                    trialResult = codes.SHOWEX_ABORT;
+                                    abortCounter = abortCounter+1;
+                                    if abortCounter>10
+                                        %kick up to higher-level try/catch to exit gracefully
+                                        error('RUNEX:tooManyAborts','Too many consecutive aborts'); 
+                                    end
+                                    msgAndWait('resume');
+                                case 'exFunction:bci_aborted'
+                                    sendCode(codes.BCI_ABORT);
+                                    trialMessage = 0;
+                                    trialResult = codes.BCI_ABORT;
+                                    sendCode(codes.END_TRIAL); % send an official end trial code so that BCI analysis is able to sync the trial numbers
+                                    error('RUNEX:bciAbort','BCI computer is not responding');
+                                otherwise %some error other than an abort
+                                    rethrow(ME); %kicks up to runexError function
+                            end
+                        end
+
+                        %Scoring:
+
+                        trialResult(trialResult==1) = codes.CORRECT; %for backwards compatibility -ACS 23Oct2012
+                        trialResult(trialResult==2) = codes.BROKE_FIX; %for backwards compatibility
+                        trialResult(trialResult==3) = codes.IGNORED; %for backwards compatibility
+                        trialResultStrings = exDecode(trialResult(:));
+
+                        % Copy the exPrint data (meant to be written from
+                        % within an ex function) into trialData so it's printed
+                        % first some argument checking
+                        % should we also make sure there are no numeric values?
+                        if size(exPrint,2)~=1
+                            warning('exPrint must be Nx1 - runex is overwriting it to avoid an error');
+                            exPrint = cell(wins.trialData.exPrintLines,1);
+                        elseif size(exPrint,1)>wins.trialData.exPrintLines
+                            warning('The size of the exPrint cell array was increased - runex is trimming it to avoid an error');
+                            exPrint = exPrint(1:wins.trialData.exPrintLines,1);
+                        elseif size(exPrint,1)<wins.trialData.exPrintLines
+                            warning('The size of the exPrint cell array was reduced - runex is overwriting it to avoid an error');
+                            exPrint = cell(wins.trialData.exPrintLines,1);
+                        end
+                        % trialData user lines get exPrint copied in so it will print
+                        trialData(wins.trialData.userLine:wins.trialData.lines) = exPrint;
+
+                        for ox = 1:numel(availableOutcomes) %new scoring -ACS 23Oct2012
+                            if retry.(availableOutcomes{ox})
+                                stats(ox) = stats(ox)+any(ismember(trialResultStrings,availableOutcomes{ox})); %only count these once per fix
+                            else
+                                stats(ox) = stats(ox)+sum(ismember(trialResultStrings,availableOutcomes{ox})); %sum these per fix
+                            end
+                            nOutcomesPerLine = 5; %for display purposes...
+                            currentLine = wins.trialData.outcomesLine+floor((ox-1)/nOutcomesPerLine);
+                            if mod(ox,nOutcomesPerLine)==1
+                                trialData{currentLine}=sprintf('%i %s',stats(ox),availableOutcomes{ox});
+                            else
+                                trialData{currentLine} = [trialData{currentLine} sprintf(', %i %s',stats(ox),availableOutcomes{ox})];
+                            end
+                        end
+
+                        msg('all_off');
+                        msgAndWait('rem_all');
+
+                        if trialMessage>-1
+                            checked = false(size(cnd));
+                            for ox = 1:numel(trialResultStrings)
+                                checked(ox) = ~retry.(trialResultStrings{ox});
+                            end
+                            if any(checked)
+                                trialCounter = trialCounter+sum(checked);
+                                for cx = 1:numel(cnd)      %Not sure this is functioning in the intended way yet... -ACS
+                                    trialCodes{cnd(cx)}{end+1} = thisTrialCodes;
+                                end
+                            end
+                            switch xmlParams{tsk}.badTrialHandling %added 23Oct2012 -ACS
+                                case 'noRetry' %don't retry bad trials
+                                    ordering{tsk}(1:numel(cnd)) = []; %just erase the current cnd from ordering and don't look back...
+                                case 'immediateRetry'
+                                    ordering{tsk}(find(checked)) = []; %tick off the good trials and feed back the ordering as is. This option really only makes sense if nStimPerFix==1.
+                                case 'reshuffle'
+                                    ordering{tsk}(find(checked)) = []; %tick off the good trials
+                                    ordering{tsk} = ordering{tsk}(randperm(numel(ordering{tsk}))); %reshuffle the remaining conditions
+                                case 'endOfBlock'
+                                    needsRetried = ordering{tsk}(find(~checked)); %trials that haven't been checked off
+                                    ordering{tsk} = [ordering{tsk}(numel(cnd)+1:end) needsRetried]; %take the conditions that haven't been attempted yet, and add the conditions needing another try to the end
+                                otherwise
+                                    error('RUNEX:unknownBadTrial','Unrecognized option for badTrialHandling, quit to diagnose.'); %kicks up to runexError
+                            end
+                        end
+
+                        msgAndWait('ack'); % sync up before ending the trial
+                        sendCode(codes.END_TRIAL);
+
+                        % Global history of trial codes
+                        %
+                        % NOTE: These codes are all referenced relative to the time
+                        % of the trial start (code '1') because of the first line
+                        % below. The "global time" for the start of each trial is
+                        % stored in allCodes.startTime
+                        thisTrialCodes(:,2) = thisTrialCodes(:,2) - thisTrialCodes(find(thisTrialCodes(:,1)==1,1,'first'),2);
+                        allCodes{end}.cnd = cnd;
+                        allCodes{end}.trialResult = trialResult;
+                        allCodes{end}.codes = thisTrialCodes;
+
+                        % Write allCodes to a file to keep track of data on Ex side
+                        % Can use the behav struct to keep track of behavior if you
+                        % like. Contents of behav are user-defined in ex-functions
+                        if params.writeFile
+                            save(fullfile(localDataDir,outfile),'allCodes','behav','exFileText','xmlParams','-v6'); % '-v6' for speed -MAS 27Feb2016
+                        end
+
+                        if trialMessage == -1
+                            break;
+                        end
+                    end
+                    
+                    if trialMessage == -1
+                        currentTaskBlock = j;
+                        pauseFlag = true;
+                        break;
+                    else
+                        pauseFlag = false;
+                    end
                 end
                 currentTaskBlock = currentTaskBlock + 1;
             end
@@ -1661,7 +1873,7 @@ fclose all;
             trialData{wins.trialData.promptLine} = defaultRunexPrompt;
             trialData{wins.trialData.statusLine} = sprintf('Error: %s. Quit to diagnose.', err.message);
             trialMessage = -1;
-            msg('all_off');q
+            msg('all_off');
             drawTrialData();
             disp(['************ ERROR: ' err.message ' **********']);
             for stk = 1:length(err.stack)
