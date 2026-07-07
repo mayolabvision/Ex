@@ -1635,6 +1635,12 @@ fclose all;
                             end
                             currentBlock = currentBlock + 1;
                         end
+                        if trialMessage == -1
+                            break;
+                        end
+                    end
+                    if trialMessage == -1
+                        break;
                     end
                 else
                     ordering = cell(1,numel(xmlParams));
