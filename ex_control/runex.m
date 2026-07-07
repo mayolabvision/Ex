@@ -1443,9 +1443,9 @@ fclose all;
                                 end
 
                                 if exist('trialResultStrings','var')
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
                                 else
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
                                 end
                                 trialData{wins.trialData.promptLine} = runningPrompt;
                                 drawTrialData();
@@ -1650,7 +1650,9 @@ fclose all;
                         break;
                     end
                 else
-                    ordering = cell(1,numel(xmlParams));
+                    if ~pauseFlag
+                        ordering = cell(1,numel(xmlParams));
+                    end
                     for tsk = 1:numel(xmlParams)
                         if ~pauseFlag
                             ordering{tsk} = createOrdering(expt{tsk},...
@@ -1683,9 +1685,9 @@ fclose all;
                         end
 
                         if exist('trialResultStrings','var')
-                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
                         else
-                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd)];
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd)];
                         end
                         trialData{wins.trialData.promptLine} = runningPrompt;
                         drawTrialData();
