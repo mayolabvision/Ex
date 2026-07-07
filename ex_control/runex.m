@@ -523,6 +523,7 @@ eyeHistory = nan(params.eyeHistoryBufferSize,3); %3 cols are x, y, time
 eyeHistoryCurrentPos = 1;
 currentBlock = 1;
 currentTaskBlock = 1;
+currentTask = 1;
 pauseFlag = false;
 if repeats > 0 % if repeats > 0 the user passed it in at the command line, otherwise use what the XML file says
     if ~iscell(xmlParams)
@@ -1405,7 +1406,10 @@ fclose all;
 
                 % Block of each task
                 if isequal(xmlParams{1}.taskBlockType, 'block')
-                    for tsk = 1:numel(xmlParams)
+                    if currentTask > numel(xmlParams)
+                        currentTask = 1;
+                    end
+                    for tsk = currentTask:numel(xmlParams)
 
                         msgAndWait('bg_color %d %d %d',xmlParams{tsk}.bgColor);
 
@@ -1627,6 +1631,7 @@ fclose all;
                             end
 
                             if trialMessage == -1
+                                currentTask = tsk;
                                 currentTaskBlock = blk;
                                 currentBlock = j;
                                 pauseFlag = true;
@@ -1639,6 +1644,7 @@ fclose all;
                         if trialMessage == -1
                             break;
                         end
+                        currentTask = currentTask + 1;
                     end
                     if trialMessage == -1
                         break;
