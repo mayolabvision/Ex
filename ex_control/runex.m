@@ -1388,31 +1388,32 @@ fclose all;
             % Send struct for each task at the beginning
             for tsk = 1:numel(xmlParams)
                 sendStruct(exCatstruct(xmlParams{tsk},params,'sorted'));
+                sendStruct(struct('taskBoundary',tsk)); % marks the end of task tsk's params so the receiver can split them back apart
             end
             matlabUDP2('send', sockets(1),'stim');
             
             trialMessage = 0;
             
             % rpts = number of times go through all tasks, same within each
-            % xmlParams cell 
-            if currentTaskBlock > xmlParams{1}.rpts
-                currentTaskBlock = 1;
+            % xmlParams cell
+            if currentBlock > xmlParams{1}.rpts
+                currentBlock = 1;
             end
-            
-            % How many repeats of each task 
-            for j = currentTaskBlock:xmlParams{1}.rpts
-                
+
+            % How many repeats of each task
+            for j = currentBlock:xmlParams{1}.rpts
+
                 % Block of each task
                 if isequal(xmlParams{1}.taskBlockType, 'block')
                     for tsk = 1:numel(xmlParams)
-                        
+
                         msgAndWait('bg_color %d %d %d',xmlParams{tsk}.bgColor);
-                 
-                        if currentBlock > xmlParams{tsk}.rptsPerTask
-                            currentBlock = 1;
+
+                        if currentTaskBlock > xmlParams{tsk}.rptsPerTask
+                            currentTaskBlock = 1;
                         end
-                        
-                        for blk = currentBlock:xmlParams{tsk}.rptsPerTask
+
+                        for blk = currentTaskBlock:xmlParams{tsk}.rptsPerTask
                             if ~pauseFlag
                                 ordering = createOrdering(expt{tsk},...
                                     'blockRandomize',xmlParams{tsk}.blockRandomize,...
@@ -1467,6 +1468,9 @@ fclose all;
                                         val = val(randi(length(val)));
                                         e{e_indx}.(fieldName) = val;
                                     end
+                                    e{e_indx}.('taskNum')=tsk;
+                                    e{e_indx}.('currentBlock')=j;
+                                    e{e_indx}.('currentTaskBlock')=blk;
                                 end
                                 e = cell2mat(e);
 
@@ -1481,9 +1485,6 @@ fclose all;
                                 e = num2cell(e);
                                 for I = 1:numel(e)
                                     e{I} = exCatstruct(xmlParams{tsk},e{I});
-                                    e{I}.('taskNum')=tsk;
-                                    e{I}.('currentTaskBlock')=j;
-                                    e{I}.('currentBlock')=blk;
                                     e{I}.('currentCnd')=cnd(I);
                                     e{I}.trialCounter = trialCounter;
                                     e{I}.ordering = ordering;
@@ -1626,14 +1627,14 @@ fclose all;
                             end
 
                             if trialMessage == -1
-                                currentBlock = blk;
-                                currentTaskBlock = j;
+                                currentTaskBlock = blk;
+                                currentBlock = j;
                                 pauseFlag = true;
                                 break;
                             else
                                 pauseFlag = false;
                             end
-                            currentBlock = currentBlock + 1;
+                            currentTaskBlock = currentTaskBlock + 1;
                         end
                         if trialMessage == -1
                             break;
@@ -1720,7 +1721,7 @@ fclose all;
                         for I = 1:numel(e)
                             e{I} = exCatstruct(xmlParams{tsk},e{I});
                             e{I}.('taskNum')=tsk;
-                            e{I}.('currentTaskBlock')=j;
+                            e{I}.('currentBlock')=j;
                             e{I}.('currentCnd')=cnd(I);
                             e{I}.trialCounter = trialCounter;
                             e{I}.ordering = ordering{tsk};
@@ -1863,14 +1864,14 @@ fclose all;
                     end
                     
                     if trialMessage == -1
-                        currentTaskBlock = j;
+                        currentBlock = j;
                         pauseFlag = true;
                         break;
                     else
                         pauseFlag = false;
                     end
                 end
-                currentTaskBlock = currentTaskBlock + 1;
+                currentBlock = currentBlock + 1;
             end
             matlabUDP2('send',sockets(1), 'q');
             trialData{wins.trialData.promptLine} = defaultRunexPrompt;
