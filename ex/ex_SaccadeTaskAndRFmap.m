@@ -58,12 +58,14 @@ function result = ex_SaccadeTaskAndRFmap(e)
 % at runtime and is NOT saved anywhere else. STIM_ON alone only gives you
 % timing. The position is logged through the code stream itself: every
 % STIM_ON code is immediately followed by two more codes - the flash's X
-% then Y position, each shifted by +10000 (posShiftForCode in
-% rfDotBeginFlash) so negative pixel coordinates stay within sendCode's
-% required 0-2^16 range. Subtract 10000 from each of those two codes to
-% recover the actual pixel position. No hardware/joystick dependency -
-% this is only a code-numbering scheme, chosen to match how this codebase
-% already encodes a runtime x/y position as two codes elsewhere.
+% then Y position, each shifted by +50000 (posShiftForCode in
+% rfDotBeginFlash) so negative pixel coordinates stay positive and clear
+% of every other code used anywhere in this codebase (highest is 31791).
+% Subtract 50000 from each of those two codes to recover the actual pixel
+% position. No hardware/joystick dependency - this is only a
+% code-numbering scheme, chosen to match how this codebase already
+% encodes a runtime x/y position as two codes elsewhere, just with a
+% larger, collision-checked offset (see rfDotBeginFlash for why).
 %
 % Note on frame-based timing: dotDurFrames/dotISIFrames are converted to
 % milliseconds inside rfDotInit() using params.displayFrameTime, which
@@ -468,10 +470,24 @@ function dotState = rfDotBeginFlash(dotState)
 % within sendCode's required 0-2^16 range. To decode offline: for every
 % STIM_ON code, the next two codes in the stream are
 % (x + posShiftForCode) and (y + posShiftForCode) for that flash.
+%
+% posShiftForCode=50000 was chosen (not the 10000 used by this
+% codebase's other position-logging code, waitForJoystick.m) because the
+% highest ad-hoc numeric code sent anywhere else in this codebase is
+% 31791 (PURSUIT_TARG_ON, used by the pursuit task this file's sibling
+% combines with) - a +10000 shift could actually collide with that (or
+% with codes.STIM*_OFF/TARG*_OFF, or overlap 0) for a wide enough dot
+% grid. +50000 clears every currently-used code by a large margin while
+% staying comfortably under sendCode's 65536 ceiling for any realistic
+% screen size. The assertion below turns a misconfigured (absurdly wide)
+% dotXPositions/dotYPositions grid into a loud error instead of a silent,
+% ambiguous code collision.
 
     global codes;
 
-    posShiftForCode = 10000;
+    posShiftForCode = 50000;
+    safeCodeFloor = 32000; % above every other code currently used in this codebase (max 31791)
+    safeCodeCeiling = 65536; % sendCode's hard limit
 
     if isempty(dotState.queue)
         newOrder = randperm(size(dotState.grid,1));
@@ -486,12 +502,18 @@ function dotState = rfDotBeginFlash(dotState)
     dotState.lastIdx = idx;
 
     pos = round(dotState.grid(idx,:));
+    xCode = pos(1) + posShiftForCode;
+    yCode = pos(2) + posShiftForCode;
+    assert(xCode>safeCodeFloor && xCode<safeCodeCeiling && yCode>safeCodeFloor && yCode<safeCodeCeiling, ...
+        'rfDotBeginFlash:codeCollisionRisk', ...
+        'dotXPositions/dotYPositions include a position too far from screen center to safely encode as a code (must stay within roughly +/-15000 px) - check the RF-map distractor grid in the xml.');
+
     msg('set %d oval 0 %i %i %i %i %i %i %.2f', ...
         [dotState.objID pos(1) pos(2) dotState.dotRad dotState.dotColor(1) dotState.dotColor(2) dotState.dotColor(3) dotState.dotAlpha]);
     msg('obj_on %d',dotState.objID);
     sendCode(codes.STIM_ON);
-    sendCode(pos(1) + posShiftForCode);
-    sendCode(pos(2) + posShiftForCode);
+    sendCode(xCode);
+    sendCode(yCode);
 
     dotState.phase = 'on';
     dotState.phaseTic = tic;
