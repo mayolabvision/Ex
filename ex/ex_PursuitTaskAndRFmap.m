@@ -42,6 +42,20 @@ function result = ex_PursuitTaskAndRFmap(e)
 % Note: the distractor grid is defined in absolute screen coordinates
 % (like the original RF mapping task), independent of fixX/fixY.
 %
+% IMPORTANT - decoding which position was flashed when: unlike the
+% original rfMapping task, where each flashed position was a
+% pre-generated condition (so it's recoverable from the saved trial/
+% condition data), the position of each distractor flash here is chosen
+% at runtime and is NOT saved anywhere else. STIM_ON alone only gives you
+% timing. The position is logged through the code stream itself: every
+% STIM_ON code is immediately followed by two more codes - the flash's X
+% then Y position, each shifted by +10000 (posShiftForCode in
+% rfDotBeginFlash) so negative pixel coordinates stay within sendCode's
+% required 0-2^16 range. Subtract 10000 from each of those two codes to
+% recover the actual pixel position. No hardware/joystick dependency -
+% this is only a code-numbering scheme, chosen to match how this codebase
+% already encodes a runtime x/y position as two codes elsewhere.
+%
 % Note on frame-based timing: dotDurFrames/dotISIFrames are converted to
 % milliseconds inside rfDotInit() using params.displayFrameTime, which
 % runex.m measures live off the actual connected monitor at the start of
@@ -65,7 +79,7 @@ function result = ex_PursuitTaskAndRFmap(e)
     e = e(1); %in case more than one 'trial' is passed at a time...
 
     objID = 2;
-    rfObjID = 4;
+    rfObjID = 4; % KKN 2026/07/17 - object ID for the RF-map distractor dot
 
     result = 0;
 
@@ -101,8 +115,12 @@ function result = ex_PursuitTaskAndRFmap(e)
         if rand < e.fixJuice, giveJuice(1); end;
     end
 
-    % initial fixation is acquired - start the RF-map distractor dot
-    % cycling now, and keep it running for the rest of the trial
+    % KKN 2026/07/17 - initial fixation is acquired, so start the RF-map
+    % distractor dot cycling now, and keep it running for the rest of the
+    % trial. From here on, waitForMS/waitForPursuit are swapped for the
+    % waitForMSFlash/waitForPursuitFlash variants defined at the bottom of
+    % this file, which also service the distractor dot every polling
+    % iteration alongside the normal fixation/pursuit checks.
     dotState = rfDotInit(e,rfObjID);
 
     [ok,dotState] = waitForMSFlash(e.fixDuration,e.fixX,e.fixY,params.fixWinRad,dotState);
@@ -166,6 +184,7 @@ end
 
 % ---------------------------------------------------------------------
 % RF-map distractor dot helpers
+% Added 2026/07/17 by KK Noneman
 % ---------------------------------------------------------------------
 
 function dotState = rfDotInit(e,objID)
@@ -242,8 +261,22 @@ function dotState = rfDotBeginFlash(dotState)
 % pops the next position off the shuffled queue (reshuffling once
 % exhausted, avoiding an immediate repeat of the last position shown) and
 % turns the distractor dot on there.
+%
+% KKN 2026/07/17 - logs the (x,y) of THIS flash through the code stream,
+% since that's the only record of it (unlike the original rfMapping task,
+% positions here are picked at runtime, not pre-generated as conditions,
+% so nothing about them is saved to the trial data otherwise). Follows
+% a code-numbering scheme also used elsewhere in this codebase for
+% logging a runtime x/y position (no hardware dependency involved):
+% STIM_ON is immediately followed by two more codes containing X and Y,
+% each shifted by +posShiftForCode so negative pixel coordinates stay
+% within sendCode's required 0-2^16 range. To decode offline: for every
+% STIM_ON code, the next two codes in the stream are
+% (x + posShiftForCode) and (y + posShiftForCode) for that flash.
 
     global codes;
+
+    posShiftForCode = 10000;
 
     if isempty(dotState.queue)
         newOrder = randperm(size(dotState.grid,1));
@@ -257,11 +290,13 @@ function dotState = rfDotBeginFlash(dotState)
     dotState.queue(1) = [];
     dotState.lastIdx = idx;
 
-    pos = dotState.grid(idx,:);
+    pos = round(dotState.grid(idx,:));
     msg('set %d oval 0 %i %i %i %i %i %i %.2f', ...
         [dotState.objID pos(1) pos(2) dotState.dotRad dotState.dotColor(1) dotState.dotColor(2) dotState.dotColor(3) dotState.dotAlpha]);
     msg('obj_on %d',dotState.objID);
     sendCode(codes.STIM_ON);
+    sendCode(pos(1) + posShiftForCode);
+    sendCode(pos(2) + posShiftForCode);
 
     dotState.phase = 'on';
     dotState.phaseTic = tic;
@@ -270,6 +305,7 @@ end
 % ---------------------------------------------------------------------
 % flash-aware wait functions (mirror waitForMS.m / waitForPursuit.m, but
 % additionally service the RF-map distractor dot on every poll)
+% Added 2026/07/17 by KK Noneman
 % ---------------------------------------------------------------------
 
 function [trialSuccess,dotState] = waitForMSFlash(waitTime,fixX,fixY,r,dotState,varargin)

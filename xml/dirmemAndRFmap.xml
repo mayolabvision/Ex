@@ -1,36 +1,37 @@
 <stimulus name="dirmemAndRFmap" repeats="40" ex="ex_SaccadeTaskAndRFmap" bgColor="0 0 0">
     <params>
-        <distance>[171]</distance>
-        <angle>[0:45:315]</angle>
-        <size>15</size>
-        <stimType>2002</stimType>
+        <distance>[171]</distance> <!-- distance of the saccade target from fixation (px) -->
+        <angle>[0:45:315]</angle> <!-- angle(s) of the saccade target relative to fixation (deg); crossed into separate conditions -->
+        <size>15</size> <!-- radius of the saccade target (px) -->
+        <stimType>2002</stimType> <!-- 2001=visually-guided, 2002=memory-guided, 2003=delayed visually-guided saccade -->
 
-        <fixX>0</fixX>
-        <fixY>0</fixY>
-        <fixRad>5</fixRad>
-        <fixColor>[0;0;255]</fixColor>
-        <targetColor>[255;255;255]</targetColor>
-        <helperTargetColor>[0;0;255]</helperTargetColor>
-        <helperTargetRatio>0</helperTargetRatio>
-        <antiSaccade>0</antiSaccade>
-        <timeToFix>1000</timeToFix>
-        <targetDuration>200</targetDuration>
-        <noFixTimeout>1000</noFixTimeout>
-        <targetOnsetDelay>100</targetOnsetDelay>
-        <targWinRadScale>[0.375]</targWinRadScale>
-        <saccadeInitiate>500</saccadeInitiate>
-        <saccadeTime>680</saccadeTime>
-        <stayOnTarget>150</stayOnTarget>
-        <incorrectTimeout>1000</incorrectTimeout>
-        <delay>20</delay>
-        <InterTrialPause>325</InterTrialPause>
+        <fixX>0</fixX> <!-- fixation point X location (px) -->
+        <fixY>0</fixY> <!-- fixation point Y location (px) -->
+        <fixRad>5</fixRad> <!-- fixation point radius (px) -->
+        <fixColor>[0;0;255]</fixColor> <!-- [R;G;B] fixation point color -->
+        <targetColor>[255;255;255]</targetColor> <!-- [R;G;B] saccade target color -->
+        <helperTargetColor>[0;0;255]</helperTargetColor> <!-- [R;G;B] color of the optional guidance target shown after the go-cue -->
+        <helperTargetRatio>0</helperTargetRatio> <!-- proportion of trials the helper target turns on (0-1) -->
+        <antiSaccade>0</antiSaccade> <!-- 0/1, whether this is an antisaccade trial; leave 0 for normal memory-guided saccades -->
+        <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <targetDuration>200</targetDuration> <!-- how long the saccade target stays on screen (ms) -->
+        <noFixTimeout>1000</noFixTimeout> <!-- punishment timeout after an aborted/broken-fixation trial (ms) -->
+        <targetOnsetDelay>100</targetOnsetDelay> <!-- time after fixation acquired before the saccade target appears (ms) -->
+        <targWinRadScale>[0.375]</targWinRadScale> <!-- saccade target acceptance window, as a fraction of distance -->
+        <saccadeInitiate>500</saccadeInitiate> <!-- max time allowed to leave the fixation window after the go-cue (ms) -->
+        <saccadeTime>680</saccadeTime> <!-- max time allowed to reach the target window once the saccade starts (ms) -->
+        <stayOnTarget>150</stayOnTarget> <!-- how long the eye must stay on the target to count as correct (ms) -->
+        <incorrectTimeout>1000</incorrectTimeout> <!-- punishment timeout for an incorrect trial (ms) -->
+        <delay>20</delay> <!-- memory delay between target offset and the go-cue (fixation point extinguishing) (ms) -->
+        <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
 
-        <dotXPositions>(-448:128:448)'</dotXPositions>
-        <dotYPositions>(-320:128:320)'</dotYPositions>
-        <dotRad>30</dotRad>
-        <dotColor>[255;0;0]</dotColor>
-        <dotAlpha>180</dotAlpha>
-        <dotDurFrames>20</dotDurFrames>
-        <dotISIFrames>0</dotISIFrames>
+        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->
+        <dotColor>[255;0;0]</dotColor> <!-- [R;G;B] color of the distractor dot -->
+        <dotAlpha>180</dotAlpha> <!-- transparency of the distractor dot, 0-255 (255 = fully opaque) -->
+        <dotDurFrames>20</dotDurFrames> <!-- how many display frames each distractor flash stays on screen (same meaning as old rfMapping_dots.xml 'frameCount') -->
+        <dotISIFrames>0</dotISIFrames> <!-- gap between distractor flashes, in display frames -->
     </params>
 </stimulus>

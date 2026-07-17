@@ -1,32 +1,33 @@
 <stimulus name="pursuitAndRFmap" repeats="400" ex="ex_PursuitTaskAndRFmap" bgColor="128 128 128">
     <params>
         <crossingTime>110</crossingTime> <!-- This should be specific to the monkey and in the monkeys subject file -->
-        <size>5</size>
-        <fixX>0</fixX>
-        <fixY>0</fixY>
-        <fixRad>5</fixRad>
-        <fixColor>[0;0;255]</fixColor>
-        <targetColor>[255;255;255]</targetColor>
-        <timeToFix>1000</timeToFix>
-        <pursuitDuration>1000</pursuitDuration>
-        <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle -->
-        <noFixTimeout>2000</noFixTimeout>
-        <stayOnTarget>1500</stayOnTarget>
-        <endPursuitWinScale>1</endPursuitWinScale>
-        <InterTrialPause>325</InterTrialPause>
+        <size>5</size> <!-- radius of the pursuit target (px) -->
+        <fixX>0</fixX> <!-- fixation point X location (px) -->
+        <fixY>0</fixY> <!-- fixation point Y location (px) -->
+        <fixRad>5</fixRad> <!-- fixation point radius (px) -->
+        <fixColor>[0;0;255]</fixColor> <!-- [R;G;B] fixation point color -->
+        <targetColor>[255;255;255]</targetColor> <!-- [R;G;B] pursuit target color (moving target and endpoint marker) -->
+        <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <pursuitDuration>1000</pursuitDuration> <!-- how long the target translates across the screen before the subject must be holding at the endpoint (ms) -->
+        <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle - radius of the eye window that must track the moving target -->
+        <noFixTimeout>2000</noFixTimeout> <!-- punishment timeout after an aborted/broken trial (ms) -->
+        <stayOnTarget>1500</stayOnTarget> <!-- how long the eye must hold at the pursuit endpoint to count as correct (ms) -->
+        <endPursuitWinScale>1</endPursuitWinScale> <!-- scales the fixation window radius used for the endpoint hold -->
+        <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
 
-        <fixDuration>[850]</fixDuration>
+        <fixDuration>[850]</fixDuration> <!-- how long fixation must be held before the pursuit target appears (ms) -->
 
-        <pursuitSpeed>[5 10 20]</pursuitSpeed>
-        <angle>[0:45:315]</angle>
+        <pursuitSpeed>[5 10 20]</pursuitSpeed> <!-- speed(s) of the pursuit target (deg/s); crossed into separate conditions -->
+        <angle>[0:45:315]</angle> <!-- direction(s) the pursuit target travels (deg); crossed into separate conditions -->
         <jump>[-1 0 1]</jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
 
-        <dotXPositions>(-448:128:448)'</dotXPositions>
-        <dotYPositions>(-320:128:320)'</dotYPositions>
-        <dotRad>30</dotRad>
-        <dotColor>[255;0;0]</dotColor>
-        <dotAlpha>180</dotAlpha>
-        <dotDurFrames>20</dotDurFrames>
-        <dotISIFrames>0</dotISIFrames>
+        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->
+        <dotColor>[255;0;0]</dotColor> <!-- [R;G;B] color of the distractor dot -->
+        <dotAlpha>180</dotAlpha> <!-- transparency of the distractor dot, 0-255 (255 = fully opaque) -->
+        <dotDurFrames>20</dotDurFrames> <!-- how many display frames each distractor flash stays on screen (same meaning as old rfMapping_dots.xml 'frameCount') -->
+        <dotISIFrames>0</dotISIFrames> <!-- gap between distractor flashes, in display frames -->
     </params>
 </stimulus>
