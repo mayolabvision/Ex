@@ -38,6 +38,11 @@ function result = ex_PursuitTaskAndRFmap(e)
 % dotDurFrames: how many display frames each distractor flash stays on
 %   screen (same meaning as the old rfMapping_dots.xml 'frameCount')
 % dotISIFrames: gap between distractor flashes, in display frames
+% posShiftForCode: the offset added to each flash's x/y before sending it
+%   as a code (see IMPORTANT note below). Recommended: 50000. This is an
+%   xml param rather than a hardcoded value specifically so it gets saved
+%   into xmlParams in the trial data - if it's ever changed, the value
+%   actually used for a given session stays recoverable.
 %
 % Note: the distractor grid is defined in absolute screen coordinates
 % (like the original RF mapping task), independent of fixX/fixY.
@@ -49,14 +54,16 @@ function result = ex_PursuitTaskAndRFmap(e)
 % at runtime and is NOT saved anywhere else. STIM_ON alone only gives you
 % timing. The position is logged through the code stream itself: every
 % STIM_ON code is immediately followed by two more codes - the flash's X
-% then Y position, each shifted by +50000 (posShiftForCode in
-% rfDotBeginFlash) so negative pixel coordinates stay positive and clear
-% of every other code used anywhere in this codebase (highest is 31791).
-% Subtract 50000 from each of those two codes to recover the actual pixel
-% position. No hardware/joystick dependency - this is only a
-% code-numbering scheme, chosen to match how this codebase already
-% encodes a runtime x/y position as two codes elsewhere, just with a
-% larger, collision-checked offset (see rfDotBeginFlash for why).
+% then Y position, each shifted by +posShiftForCode (from the xml, saved
+% to xmlParams) so negative pixel coordinates stay positive and clear of
+% every other code used anywhere in this codebase (highest is 31791).
+% Subtract that session's posShiftForCode from each of those two codes to
+% recover the actual pixel position - check xmlParams.posShiftForCode for
+% that session rather than assuming a fixed value. No hardware/joystick
+% dependency - this is only a code-numbering scheme, chosen to match how
+% this codebase already encodes a runtime x/y position as two codes
+% elsewhere, just with a larger, collision-checked offset (see
+% rfDotBeginFlash for why).
 %
 % Note on frame-based timing: dotDurFrames/dotISIFrames are converted to
 % milliseconds inside rfDotInit() using params.displayFrameTime, which
@@ -216,6 +223,7 @@ function dotState = rfDotInit(e,objID)
     dotState.dotAlpha = e.dotAlpha;
     dotState.dotDur = e.dotDurFrames * params.displayFrameTime * 1000;
     dotState.dotISI = e.dotISIFrames * params.displayFrameTime * 1000;
+    dotState.posShiftForCode = e.posShiftForCode; % KKN 2026/07/17 - stored from xml (not hardcoded) so it's saved to xmlParams in the trial data and can be recovered later even if this value gets changed
     dotState.phase = 'off';
     dotState.phaseTic = tic;
     dotState.needsInit = true;
@@ -276,8 +284,15 @@ function dotState = rfDotBeginFlash(dotState)
 % STIM_ON code, the next two codes in the stream are
 % (x + posShiftForCode) and (y + posShiftForCode) for that flash.
 %
-% posShiftForCode=50000 was chosen (not the 10000 used by this
-% codebase's other position-logging code, waitForJoystick.m) because the
+% posShiftForCode comes from the xml (e.posShiftForCode, stored into
+% dotState by rfDotInit), NOT hardcoded here, specifically so its value
+% is saved into xmlParams as part of the trial data every session - if
+% this ever gets changed (in the xml, or by editing the default below),
+% the actual shift used for a given session stays permanently
+% recoverable instead of having to be inferred/guessed later.
+%
+% Default of 50000 (not the 10000 used by this codebase's other
+% position-logging code, waitForJoystick.m) was chosen because the
 % highest ad-hoc numeric code sent anywhere else in this codebase is
 % 31791 (PURSUIT_TARG_ON, used by this very file for the pursuit target)
 % - a +10000 shift could actually collide with that (or with
@@ -285,12 +300,13 @@ function dotState = rfDotBeginFlash(dotState)
 % +50000 clears every currently-used code by a large margin while
 % staying comfortably under sendCode's 65536 ceiling for any realistic
 % screen size. The assertion below turns a misconfigured (absurdly wide)
-% dotXPositions/dotYPositions grid into a loud error instead of a silent,
-% ambiguous code collision.
+% dotXPositions/dotYPositions grid, OR a posShiftForCode set too low in
+% the xml, into a loud error instead of a silent, ambiguous code
+% collision.
 
     global codes;
 
-    posShiftForCode = 50000;
+    posShiftForCode = dotState.posShiftForCode;
     safeCodeFloor = 32000; % above every other code currently used in this codebase (max 31791)
     safeCodeCeiling = 65536; % sendCode's hard limit
 
