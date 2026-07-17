@@ -33,6 +33,6 @@
         <dotAlpha>180</dotAlpha> <!-- transparency of the distractor dot, 0-255 (255 = fully opaque) -->
         <dotDurFrames>20</dotDurFrames> <!-- how many display frames each distractor flash stays on screen (same meaning as old rfMapping_dots.xml 'frameCount') -->
         <dotISIFrames>0</dotISIFrames> <!-- gap between distractor flashes, in display frames -->
-        <posShiftForCode>50000</posShiftForCode> <!-- offset added to each flash's x/y before sending as a code (so it stays positive and clear of every other code in use); stored here (not hardcoded) so it's saved to xmlParams and stays recoverable if ever changed -->
+        <posShiftForCode>22000</posShiftForCode> <!-- offset added to each flash's x/y before sending as a code; chosen to fall in the 12697-31791 gap between other codes in use, AND inside the [1000,32000] window post-processing code keeps (values outside that window get silently dropped) - stored here (not hardcoded) so it's saved to xmlParams and stays recoverable if ever changed -->
     </params>
 </stimulus>

@@ -39,8 +39,12 @@ function result = ex_PursuitTaskAndRFmap(e)
 %   screen (same meaning as the old rfMapping_dots.xml 'frameCount')
 % dotISIFrames: gap between distractor flashes, in display frames
 % posShiftForCode: the offset added to each flash's x/y before sending it
-%   as a code (see IMPORTANT note below). Recommended: 50000. This is an
-%   xml param rather than a hardcoded value specifically so it gets saved
+%   as a code (see IMPORTANT note below). Recommended: 22000 - do NOT set
+%   this above ~29000 or below ~15000 (see rfDotBeginFlash for why: it
+%   has to both clear every other code in use AND stay inside the
+%   [1000,32000] window that downstream post-processing code keeps,
+%   values outside that window are silently discarded). This is an xml
+%   param rather than a hardcoded value specifically so it gets saved
 %   into xmlParams in the trial data - if it's ever changed, the value
 %   actually used for a given session stays recoverable.
 %
@@ -55,8 +59,10 @@ function result = ex_PursuitTaskAndRFmap(e)
 % timing. The position is logged through the code stream itself: every
 % STIM_ON code is immediately followed by two more codes - the flash's X
 % then Y position, each shifted by +posShiftForCode (from the xml, saved
-% to xmlParams) so negative pixel coordinates stay positive and clear of
-% every other code used anywhere in this codebase (highest is 31791).
+% to xmlParams) so negative pixel coordinates stay positive, clear of
+% every other code used anywhere in this codebase (highest is 31791),
+% AND inside the [1000,32000] range downstream post-processing code
+% actually keeps.
 % Subtract that session's posShiftForCode from each of those two codes to
 % recover the actual pixel position - check xmlParams.posShiftForCode for
 % that session rather than assuming a fixed value. No hardware/joystick
@@ -291,24 +297,26 @@ function dotState = rfDotBeginFlash(dotState)
 % the actual shift used for a given session stays permanently
 % recoverable instead of having to be inferred/guessed later.
 %
-% Default of 50000 (not the 10000 used by this codebase's other
-% position-logging code, waitForJoystick.m) was chosen because the
-% highest ad-hoc numeric code sent anywhere else in this codebase is
-% 31791 (PURSUIT_TARG_ON, used by this very file for the pursuit target)
-% - a +10000 shift could actually collide with that (or with
-% codes.STIM*_OFF/TARG*_OFF, or overlap 0) for a wide enough dot grid.
-% +50000 clears every currently-used code by a large margin while
-% staying comfortably under sendCode's 65536 ceiling for any realistic
-% screen size. The assertion below turns a misconfigured (absurdly wide)
-% dotXPositions/dotYPositions grid, OR a posShiftForCode set too low in
-% the xml, into a loud error instead of a silent, ambiguous code
-% collision.
+% Default of 22000 was chosen for two reasons that both have to hold at
+% once: (1) it has to clear every other code sent anywhere in this
+% codebase (2001-2003, 12697, 31791 are the relevant ones in this
+% range - not the 10000 used by this codebase's other position-logging
+% code, waitForJoystick.m, which is too close to 12697 for a wide dot
+% grid), and (2) unlike sendCode's own 0-2^16 hardware limit, downstream
+% post-processing code discards any code that isn't <256 or in
+% [1000,32000] - so anything shifted above 32000 (e.g. the 50000 this
+% was first set to) silently vanishes before it's ever decodable. 22000
+% sits in the 12697-31791 gap, comfortably inside [1000,32000], with the
+% assertion below (safeCodeFloor/safeCodeCeiling) enforcing both
+% constraints so a misconfigured (too-wide) dotXPositions/dotYPositions
+% grid, or a posShiftForCode edited to an unsafe value, throws a loud
+% error instead of silently losing codes.
 
     global codes;
 
     posShiftForCode = dotState.posShiftForCode;
-    safeCodeFloor = 32000; % above every other code currently used in this codebase (max 31791)
-    safeCodeCeiling = 65536; % sendCode's hard limit
+    safeCodeFloor = 15000; % clears 12697 with margin, and is well inside the post-processing filter's >=1000 floor
+    safeCodeCeiling = 29000; % clears 31791 with margin, and is well inside the post-processing filter's <=32000 ceiling
 
     if isempty(dotState.queue)
         newOrder = randperm(size(dotState.grid,1));
