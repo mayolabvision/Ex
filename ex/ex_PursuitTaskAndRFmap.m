@@ -35,28 +35,26 @@ function result = ex_PursuitTaskAndRFmap(e)
 % dotRad: radius of the distractor dot (px)
 % dotColor: [R;G;B] color of the distractor dot
 % dotAlpha: transparency of the distractor dot, 0-255 (255 = opaque)
-% dotDur: duration each distractor flash stays on screen, IN MILLISECONDS
-%   (not frames - see note below)
-% dotISI: gap between distractor flashes (ms)
+% dotDurFrames: how many display frames each distractor flash stays on
+%   screen (same meaning as the old rfMapping_dots.xml 'frameCount')
+% dotISIFrames: gap between distractor flashes, in display frames
 %
 % Note: the distractor grid is defined in absolute screen coordinates
 % (like the original RF mapping task), independent of fixX/fixY.
 %
-% Note on dotDur vs. the old rfMapping_dots.xml 'frameCount' param: those
-% are NOT the same thing and are not interchangeable by just copying the
-% number over. frameCount was frames of display refresh, counted and
-% auto-turned-off by the display computer itself (showex.m), completely
-% independent of the control computer. dotDur is milliseconds of
-% wall-clock time, tracked here on the control computer with tic/toc and
-% turned on/off explicitly via 'obj_on'/'obj_off' messages, interleaved
-% every polling iteration with the pursuit-task's own eye-position checks.
-% This control-side approach is what makes it possible to keep flashing
-% the distractor independently while a totally different, already-running
-% timeline (fixation hold, pursuit tracking, endpoint hold) is being
-% tracked at the same time - a frameCount-based dot can't be interleaved
-% that way since its on/off timing lives entirely on the display side.
-% Converting an old frameCount value to dotDur: dotDur_ms = frameCount /
-% refreshHz * 1000 (e.g. 20 frames at 60 Hz = 333 ms).
+% Note on frame-based timing: dotDurFrames/dotISIFrames are converted to
+% milliseconds inside rfDotInit() using params.displayFrameTime, which
+% runex.m measures live off the actual connected monitor at the start of
+% each session (its 'framerate' query to the display computer). So the
+% same xml produces the same real-world flash duration regardless of
+% which rig/monitor refresh rate it's run on, exactly like the old
+% frameCount behavior. The reason the on/off timing itself is still
+% tracked in milliseconds on the control side (rather than relying on the
+% display's own frame-count auto-off, as frameCount originally did) is
+% that it needs to be interleaved, every polling iteration, with the
+% pursuit task's own eye-position checks - a display-side auto-off can't
+% be paused or coordinated with a separate, already-running control-side
+% timeline the way this needs to be.
 %
 % Last modified:
 % 2026/07/17 by KK Noneman - created by combining ex_activeFixation and
@@ -173,7 +171,19 @@ end
 function dotState = rfDotInit(e,objID)
 % builds the shuffled position grid and initial (off) state for the
 % RF-map distractor dot. The first call to rfDotService will trigger the
-% first flash immediately, regardless of dotISI.
+% first flash immediately, regardless of dotISIFrames.
+%
+% dotDurFrames/dotISIFrames are specified in DISPLAY FRAMES (like the old
+% rfMapping_dots.xml 'frameCount' param) and converted here to
+% milliseconds using params.displayFrameTime, which is measured live off
+% the actual connected monitor at the start of the session (see
+% runex.m's 'framerate' query). This keeps the flash duration correct in
+% real time regardless of what refresh rate a given rig runs at, while
+% the on/off timing itself is still tracked in ms on the control side (as
+% opposed to frameCount's own auto-off) so it can be interleaved with the
+% pursuit task's eye-position checks.
+
+    global params;
 
     [gx,gy] = ndgrid(e.dotXPositions(:),e.dotYPositions(:));
     dotState.grid = [gx(:) gy(:)];
@@ -183,8 +193,8 @@ function dotState = rfDotInit(e,objID)
     dotState.dotRad = e.dotRad;
     dotState.dotColor = e.dotColor;
     dotState.dotAlpha = e.dotAlpha;
-    dotState.dotDur = e.dotDur;
-    dotState.dotISI = e.dotISI;
+    dotState.dotDur = e.dotDurFrames * params.displayFrameTime * 1000;
+    dotState.dotISI = e.dotISIFrames * params.displayFrameTime * 1000;
     dotState.phase = 'off';
     dotState.phaseTic = tic;
     dotState.needsInit = true;

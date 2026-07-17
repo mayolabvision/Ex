@@ -30,7 +30,7 @@
         <dotRad>30</dotRad>
         <dotColor>[255;0;0]</dotColor>
         <dotAlpha>180</dotAlpha>
-        <dotDur>150</dotDur>
-        <dotISI>0</dotISI>
+        <dotDurFrames>20</dotDurFrames>
+        <dotISIFrames>0</dotISIFrames>
     </params>
 </stimulus>
