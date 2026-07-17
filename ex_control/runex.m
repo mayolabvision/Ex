@@ -1714,6 +1714,8 @@ fclose all;
                                 val = val(randi(length(val)));
                                 e{e_indx}.(fieldName) = val;
                             end
+                            e{e_indx}.('taskNum')=tsk;
+                            e{e_indx}.('currentBlock')=j;
                         end
                         e = cell2mat(e);
 
@@ -1728,8 +1730,6 @@ fclose all;
                         e = num2cell(e);
                         for I = 1:numel(e)
                             e{I} = exCatstruct(xmlParams{tsk},e{I});
-                            e{I}.('taskNum')=tsk;
-                            e{I}.('currentBlock')=j;
                             e{I}.('currentCnd')=cnd(I);
                             e{I}.trialCounter = trialCounter;
                             e{I}.ordering = ordering{tsk};
