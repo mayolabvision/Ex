@@ -23,7 +23,7 @@
         <stayOnTarget>150</stayOnTarget>
         <incorrectTimeout>1000</incorrectTimeout>
         <delay>20</delay>
-        <isi>300</isi>
+        <InterTrialPause>325</InterTrialPause>
 
         <dotXPositions>(-448:128:448)'</dotXPositions>
         <dotYPositions>(-320:128:320)'</dotYPositions>

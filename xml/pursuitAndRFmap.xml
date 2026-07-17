@@ -13,6 +13,7 @@
         <noFixTimeout>2000</noFixTimeout>
         <stayOnTarget>1500</stayOnTarget>
         <endPursuitWinScale>1</endPursuitWinScale>
+        <InterTrialPause>325</InterTrialPause>
 
         <fixDuration>[850]</fixDuration>
 
