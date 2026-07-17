@@ -35,11 +35,28 @@ function result = ex_PursuitTaskAndRFmap(e)
 % dotRad: radius of the distractor dot (px)
 % dotColor: [R;G;B] color of the distractor dot
 % dotAlpha: transparency of the distractor dot, 0-255 (255 = opaque)
-% dotDur: duration each distractor flash stays on screen (ms)
+% dotDur: duration each distractor flash stays on screen, IN MILLISECONDS
+%   (not frames - see note below)
 % dotISI: gap between distractor flashes (ms)
 %
 % Note: the distractor grid is defined in absolute screen coordinates
 % (like the original RF mapping task), independent of fixX/fixY.
+%
+% Note on dotDur vs. the old rfMapping_dots.xml 'frameCount' param: those
+% are NOT the same thing and are not interchangeable by just copying the
+% number over. frameCount was frames of display refresh, counted and
+% auto-turned-off by the display computer itself (showex.m), completely
+% independent of the control computer. dotDur is milliseconds of
+% wall-clock time, tracked here on the control computer with tic/toc and
+% turned on/off explicitly via 'obj_on'/'obj_off' messages, interleaved
+% every polling iteration with the pursuit-task's own eye-position checks.
+% This control-side approach is what makes it possible to keep flashing
+% the distractor independently while a totally different, already-running
+% timeline (fixation hold, pursuit tracking, endpoint hold) is being
+% tracked at the same time - a frameCount-based dot can't be interleaved
+% that way since its on/off timing lives entirely on the display side.
+% Converting an old frameCount value to dotDur: dotDur_ms = frameCount /
+% refreshHz * 1000 (e.g. 20 frames at 60 Hz = 333 ms).
 %
 % Last modified:
 % 2026/07/17 by KK Noneman - created by combining ex_activeFixation and
@@ -173,16 +190,24 @@ function dotState = rfDotInit(e,objID)
     dotState.needsInit = true;
 end
 
-function dotState = rfDotService(dotState)
+function dotState = rfDotService(dotState,remainingMS)
 % called once per polling iteration of the flash-aware wait functions;
 % toggles the distractor dot on/off on its own schedule, independent of
 % whatever fixation/pursuit logic is currently running.
+%
+% remainingMS is how much time is left in the CURRENT wait call (e.g. the
+% stayOnTarget hold). A new flash is only started if there's enough of
+% that time left for it to finish (dotDur) - otherwise it's held off
+% until the next wait call, so a flash never gets truncated by the trial
+% ending (or by 'all_off') partway through.
 
     global codes;
 
     if dotState.needsInit
-        dotState = rfDotBeginFlash(dotState);
-        dotState.needsInit = false;
+        if remainingMS >= dotState.dotDur
+            dotState = rfDotBeginFlash(dotState);
+            dotState.needsInit = false;
+        end
         return;
     end
 
@@ -197,7 +222,7 @@ function dotState = rfDotService(dotState)
                 dotState.phaseTic = tic;
             end
         case 'off'
-            if elapsedMS >= dotState.dotISI
+            if elapsedMS >= dotState.dotISI && remainingMS >= dotState.dotDur
                 dotState = rfDotBeginFlash(dotState);
             end
     end
@@ -275,7 +300,8 @@ function [trialSuccess,dotState] = waitForMSFlash(waitTime,fixX,fixY,r,dotState,
 
     while (toc(thisStart)*1000) <= waitTime
         loopTop = GetSecs;
-        dotState = rfDotService(dotState);
+        remainingMS = waitTime - toc(thisStart)*1000;
+        dotState = rfDotService(dotState,remainingMS);
         d = samp;
         eyePos = projectCalibration(d(end,:));
         relPos = bsxfun(@minus,eyePos(:),[fixX;fixY]);
@@ -344,7 +370,8 @@ function [trialSuccess,dotState] = waitForPursuitFlash(waitTime,pursuitStartTime
         yPos = startY + jumpSize*deg2pix(1)*sin(deg2rad(angle)) + pursuitSpeed*deg2pix(1)*sin(deg2rad(angle))*(GetSecs-pursuitStartTime);
 
         loopTop = GetSecs;
-        dotState = rfDotService(dotState);
+        remainingMS = waitTime - toc(thisStart)*1000;
+        dotState = rfDotService(dotState,remainingMS);
         d = samp;
         eyePos = projectCalibration(d(end,:));
         relPos = bsxfun(@minus,eyePos(:),[xPos;yPos]);
