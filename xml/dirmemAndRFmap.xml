@@ -11,7 +11,7 @@
         <fixColor>[0;0;255]</fixColor>
         <targetColor>[255;255;255]</targetColor>
         <helperTargetColor>[0;0;255]</helperTargetColor>
-        <helperTargetRatio>0.5</helperTargetRatio>
+        <helperTargetRatio>0</helperTargetRatio>
         <antiSaccade>0</antiSaccade>
         <timeToFix>1000</timeToFix>
         <targetDuration>200</targetDuration>
