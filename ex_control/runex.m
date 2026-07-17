@@ -1373,7 +1373,7 @@ fclose all;
 
 %% MULTI-TASK FUNCTIONALITY - KKN 06/2026
     function exRunExperiment_multiTask
-        persistent ordering trialCounter %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
+        persistent ordering trialCounter nConditionsTotal %keep the value of ordering persistent, needed when this moved to subfunction. -ACS 13Sep2013
         try
             % set the initial background color here
             msgAndWait('bg_color %d %d %d',xmlParams{1}.bgColor);   
@@ -1425,6 +1425,7 @@ fclose all;
                                     'numBlocksPerRandomization',xmlParams{tsk}.numBlocksPerRandomization,...
                                     'exFileControl',xmlParams{tsk}.exFileControl); %-ACS 23Oct2012
                                 trialCounter = 1;
+                                nConditionsTotal = length(ordering);
                             end
                             if any(ordering<1), ordering = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
 
@@ -1443,9 +1444,9 @@ fclose all;
                                 end
 
                                 if exist('trialResultStrings','var')
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,nConditionsTotal) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
                                 else
-                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering)+trialCounter-1) sprintf('%i ',cnd)];
+                                    trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Within-Task Block %i/%i, ',blk,xmlParams{tsk}.rptsPerTask),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,nConditionsTotal) sprintf('%i ',cnd)];
                                 end
                                 trialData{wins.trialData.promptLine} = runningPrompt;
                                 drawTrialData();
@@ -1652,6 +1653,7 @@ fclose all;
                 else
                     if ~pauseFlag
                         ordering = cell(1,numel(xmlParams));
+                        nConditionsTotal = cell(1,numel(xmlParams));
                     end
                     for tsk = 1:numel(xmlParams)
                         if ~pauseFlag
@@ -1661,6 +1663,7 @@ fclose all;
                                 'numBlocksPerRandomization',xmlParams{tsk}.numBlocksPerRandomization,...
                                 'exFileControl',xmlParams{tsk}.exFileControl); %-ACS 23Oct2012
                             trialCounter = 1;
+                            nConditionsTotal{tsk} = length(ordering{tsk});
                         end
                         if any(ordering{tsk}<1), ordering{tsk} = []; break; end %break loop for any ordering less than one (e.g., from EX file control) -ACS 23Oct2012 %changed to ordering<1 rather than <0 -ACS 03Sep2013
                     end
@@ -1685,9 +1688,9 @@ fclose all;
                         end
 
                         if exist('trialResultStrings','var')
-                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,nConditionsTotal{tsk}) sprintf('%i ',cnd),sprintf('   *Previous Trial Outcome =  %s *',char(trialResultStrings(end)))];
                         else
-                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,length(ordering{tsk})+trialCounter-1) sprintf('%i ',cnd)];
+                            trialData{wins.trialData.trialLine} = [sprintf('Session %i, ',params.sessionNumber),sprintf('Block %i/%i, ',j,xmlParams{tsk}.rpts),sprintf('Task %i, ',tsk),sprintf('Trial %i/%i, Condition(s) ',trialCounter,nConditionsTotal{tsk}) sprintf('%i ',cnd)];
                         end
                         trialData{wins.trialData.promptLine} = runningPrompt;
                         drawTrialData();
