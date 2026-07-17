@@ -1,0 +1,35 @@
+<stimulus name="dirmemAndRFmap" repeats="40" ex="ex_SaccadeTaskAndRFmap" bgColor="0 0 0">
+    <params>
+        <distance>[171]</distance>
+        <angle>[0:45:315]</angle>
+        <size>15</size>
+        <stimType>2002</stimType>
+
+        <fixX>0</fixX>
+        <fixY>0</fixY>
+        <fixRad>5</fixRad>
+        <fixColor>[0;0;255]</fixColor>
+        <targetColor>[255;255;255]</targetColor>
+        <helperTargetColor>[0;0;255]</helperTargetColor>
+        <antiSaccade>0</antiSaccade>
+        <timeToFix>1000</timeToFix>
+        <targetDuration>200</targetDuration>
+        <noFixTimeout>1000</noFixTimeout>
+        <targetOnsetDelay>100</targetOnsetDelay>
+        <targWinRadScale>[0.375]</targWinRadScale>
+        <saccadeInitiate>500</saccadeInitiate>
+        <saccadeTime>680</saccadeTime>
+        <stayOnTarget>150</stayOnTarget>
+        <incorrectTimeout>1000</incorrectTimeout>
+        <delay>20</delay>
+        <isi>300</isi>
+
+        <dotXPositions>(-448:128:448)'</dotXPositions>
+        <dotYPositions>(-320:128:320)'</dotYPositions>
+        <dotRad>30</dotRad>
+        <dotColor>[255;0;0]</dotColor>
+        <dotAlpha>180</dotAlpha>
+        <dotDur>150</dotDur>
+        <dotISI>0</dotISI>
+    </params>
+</stimulus>
