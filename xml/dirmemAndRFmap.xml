@@ -1,4 +1,4 @@
-<stimulus name="dirmemAndRFmap" repeats="40" ex="ex_SaccadeTaskAndRFmap" bgColor="0 0 0">
+<stimulus name="dirmemAndRFmap" repeats="40" ex="ex_SaccadeTaskAndRFmap" bgColor="100 100 100">
     <params>
         <distance>[171]</distance> <!-- distance of the saccade target from fixation (px) -->
         <angle>[0:45:315]</angle> <!-- angle(s) of the saccade target relative to fixation (deg); crossed into separate conditions -->
