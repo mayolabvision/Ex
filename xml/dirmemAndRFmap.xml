@@ -10,7 +10,8 @@
         <fixRad>5</fixRad> <!-- fixation point radius (px) -->
         <fixColor>[0;0;255]</fixColor> <!-- [R;G;B] fixation point color -->
         <targetColor>[255;255;255]</targetColor> <!-- [R;G;B] saccade target color -->
-        <helperTargetColor>[0;0;255]</helperTargetColor> <!-- [R;G;B] color of the optional guidance target shown after the go-cue -->
+        <helperTargetColor>[0;0;255]</helperTargetColor> <!-- [R;G;B] color of the optional guidance target; turns on once the target window is acquired (not during the saccade) -->
+        <helperTargetSize>10</helperTargetSize> <!-- radius of the helper target (px); required if helperTargetColor is set, independent of the main target's "size" -->
         <helperTargetRatio>0</helperTargetRatio> <!-- proportion of trials the helper target turns on (0-1) -->
         <antiSaccade>0</antiSaccade> <!-- 0/1, whether this is an antisaccade trial; leave 0 for normal memory-guided saccades -->
         <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->

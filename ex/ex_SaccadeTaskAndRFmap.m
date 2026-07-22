@@ -24,15 +24,29 @@ function result = ex_SaccadeTaskAndRFmap(e)
 % Objects:
 % 1 - fixation point
 % 2 - saccade target (diode attached)
-% 3 - helper target (optional)
-% 4 - antisaccade "acquired window" helper target (optional)
-% 5 - RF-map distractor dot
+% 3 - helper target (optional; only turns on once the target window has
+%     been acquired - see ACQUIRE_TARG below - not during the saccade
+%     itself, and used for both normal and antisaccade trials; there is
+%     no separate obj 4 fallback anymore, since a single post-acquisition
+%     trigger covers both cases)
+% 5 - RF-map distractor dot (obj 4 is intentionally unused/skipped, kept
+%     free rather than renumbered so this stays a minimal, low-risk diff)
+%
+% KKN 2026/07/17 - changed the helper target (obj 3) to turn on only
+% after the target window is acquired (sendCode(codes.ACQUIRE_TARG)),
+% not during the saccade as it originally did in ex_SaccadeTask_varDelays
+% and the base version of this file. This change is local to this file
+% only - ex_SaccadeTask_varDelays.m and ex_PursuitTaskAndRFmap.m are
+% unaffected. Also added helperTargetSize (xml) to control the helper
+% target's radius independently of the main saccade target's size.
 %
 % XML REQUIREMENTS (saccade task, same as ex_SaccadeTask_varDelays)
 % angle, distance, size, targetColor, stimType, fixX, fixY, fixRad,
 % fixColor, timeToFix, noFixTimeout, targetOnsetDelay, targetDuration,
 % delay, stayOnTarget, saccadeInitiate, saccadeTime, targWinRadScale,
-% incorrectTimeout, isi. Optional: extraBorder, fixJuice, helperTargetColor,
+% incorrectTimeout. Optional: extraBorder, fixJuice, helperTargetColor,
+% helperTargetSize (required if helperTargetColor is present - radius in
+% px of the helper target, independent of the main target's size),
 % helperTargetRatio, antiSaccade, fixColorAnti, targWinRadScaleAnti,
 % InterTrialPause.
 %
@@ -121,9 +135,6 @@ function result = ex_SaccadeTaskAndRFmap(e)
     newX = round(e.distance*cos(theta));
     newY = round(e.distance*sin(theta));
 
-    % Set helpTarg value to 0 and change to 1 if it gets turned on
-    helpTarg = 0;
-
     % now figure out if you need to shift the fixation point around so the
     % saccade will fit on the screen (e.g., for an 'amp' series). The
     % "extraborder" keeps the dot from ever getting within that many pixels
@@ -163,12 +174,18 @@ function result = ex_SaccadeTaskAndRFmap(e)
     end
     % Target
     msg('set 2 oval 0 %i %i %i %i %i %i',[newX newY e.size e.targetColor(1) e.targetColor(2) e.targetColor(3)]);
-    % Helper Target
-    if isfield(e, {'helperTargetColor', 'antiSaccade'}) & e.antiSaccade == 1
-        msg('set 3 oval 0 %i %i %i %i %i %i',[-newX -newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
-        msg('set 4 oval 0 %i %i %i %i %i %i',[-newX -newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
-    elseif isfield(e, 'helperTargetColor')
-        msg('set 3 oval 0 %i %i %i %i %i %i',[newX newY e.size e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
+    % Helper Target - single object; only defined if helperTargetColor is
+    % present. KKN 2026/07/17 - now turns on only after the target window
+    % is acquired (see below), not during the saccade - so antisaccade no
+    % longer needs a second "fallback" helper object (the old obj 4); one
+    % object serves both branches. Size is set independently via
+    % helperTargetSize, not e.size (the main saccade target's size).
+    if isfield(e, 'helperTargetColor')
+        if isfield(e, 'antiSaccade') & e.antiSaccade == 1
+            msg('set 3 oval 0 %i %i %i %i %i %i',[-newX -newY e.helperTargetSize e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
+        else
+            msg('set 3 oval 0 %i %i %i %i %i %i',[newX newY e.helperTargetSize e.helperTargetColor(1) e.helperTargetColor(2) e.helperTargetColor(3)]);
+        end
     end
     msg(['diode ' num2str(objID)]);
 
@@ -301,21 +318,6 @@ function result = ex_SaccadeTaskAndRFmap(e)
 
     sendCode(codes.SACCADE);
 
-    if isfield(e,'helperTargetColor')
-        %% turn on a target for guidance if 'helperTargetColor' param is present
-        if isfield(e, 'helperTargetRatio')
-            % turn on a helper in a defined ration of trials
-            if rand < e.helperTargetRatio
-                msg('obj_on 3')
-                sendCode(codes.TARG_ON);
-                helpTarg = 1;
-            end
-        else
-            msg('obj_on 3');
-            sendCode(codes.TARG_ON);
-        end
-    end
-
     if isfield(e, 'antiSaccade') & e.antiSaccade == 1
 
         targetWindowRadius = round(e.targWinRadScaleAnti*e.distance);
@@ -333,9 +335,18 @@ function result = ex_SaccadeTaskAndRFmap(e)
 
         sendCode(codes.ACQUIRE_TARG);
 
-        if helpTarg == 0
-            msg('obj_on 4');
-            sendCode(codes.TARG_ON);
+        if isfield(e,'helperTargetColor')
+            % KKN 2026/07/17 - helper now turns on only once the target
+            % window has been acquired (not during the saccade)
+            if isfield(e, 'helperTargetRatio')
+                if rand < e.helperTargetRatio
+                    msg('obj_on 3');
+                    sendCode(codes.TARG_ON);
+                end
+            else
+                msg('obj_on 3');
+                sendCode(codes.TARG_ON);
+            end
         end
 
         [ok,dotState] = waitForMSFlash(e.stayOnTarget,-newX,-newY,targetWindowRadius,dotState);
@@ -365,6 +376,20 @@ function result = ex_SaccadeTaskAndRFmap(e)
         end
 
         sendCode(codes.ACQUIRE_TARG);
+
+        if isfield(e,'helperTargetColor')
+            % KKN 2026/07/17 - helper now turns on only once the target
+            % window has been acquired (not during the saccade)
+            if isfield(e, 'helperTargetRatio')
+                if rand < e.helperTargetRatio
+                    msg('obj_on 3');
+                    sendCode(codes.TARG_ON);
+                end
+            else
+                msg('obj_on 3');
+                sendCode(codes.TARG_ON);
+            end
+        end
 
         [ok,dotState] = waitForMSFlash(e.stayOnTarget,newX,newY,targetWindowRadius,dotState);
         if ~ok
