@@ -1,0 +1,39 @@
+<stimulus name="dirmemAndRFmap_catch" repeats="40" ex="ex_SaccadeTaskAndRFmap_Catch" bgColor="0 0 0">
+    <params>
+        <distance>[171]</distance> <!-- distance of the (never-saccaded-to) target from fixation (px) -->
+        <angle>[0:45:315]</angle> <!-- angle(s) of the target relative to fixation (deg); crossed into separate conditions -->
+        <size>15</size> <!-- radius of the target (px) -->
+        <stimType>2002</stimType> <!-- 2001=visually-guided, 2002=memory-guided, 2003=delayed visually-guided (controls target-presentation timing only - there is no saccade in this task) -->
+
+        <fixX>0</fixX> <!-- fixation point X location (px) -->
+        <fixY>0</fixY> <!-- fixation point Y location (px) -->
+        <fixRad>5</fixRad> <!-- fixation point radius (px) -->
+        <fixColor>[0;0;255]</fixColor> <!-- [R;G;B] fixation point color -->
+        <targetColor>[255;255;255]</targetColor> <!-- [R;G;B] target color -->
+        <helperTargetColor>[0;0;255]</helperTargetColor> <!-- [R;G;B] kept for xml compatibility with dirmemAndRFmap.xml; never turned on in this catch task -->
+        <helperTargetRatio>0</helperTargetRatio> <!-- kept for xml compatibility; unused here -->
+        <antiSaccade>0</antiSaccade> <!-- kept for xml compatibility; unused here (no saccade occurs) -->
+        <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <targetDuration>200</targetDuration> <!-- how long the target stays on screen (ms) -->
+        <noFixTimeout>1000</noFixTimeout> <!-- punishment timeout after an aborted/broken-fixation trial (ms) -->
+        <targetOnsetDelay>100</targetOnsetDelay> <!-- time after fixation acquired before the target appears (ms) -->
+        <targWinRadScale>[0.375]</targWinRadScale> <!-- kept for xml compatibility; unused here (no target window is ever searched for) -->
+        <saccadeInitiate>500</saccadeInitiate> <!-- kept for xml compatibility; unused here (no saccade occurs) -->
+        <saccadeTime>680</saccadeTime> <!-- kept for xml compatibility; unused here (no saccade occurs) -->
+        <stayOnTarget>150</stayOnTarget> <!-- how long the eye must continue fixating (the ORIGINAL fixation point) to count as correct, drawn identically to the real task's target-hold requirement (ms) -->
+        <catchLatencyBuffer>250</catchLatencyBuffer> <!-- fixed buffer added after target presentation, standing in for the saccade initiation+execution time a real trial would spend here (ms) - this is the one field NOT in dirmemAndRFmap.xml -->
+        <incorrectTimeout>1000</incorrectTimeout> <!-- punishment timeout for an incorrect trial (ms) -->
+        <delay>20</delay> <!-- memory delay between target offset and where the go-cue would happen in the real task (ms) -->
+        <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
+
+        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
+        <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->
+        <dotColor>[255;0;0]</dotColor> <!-- [R;G;B] color of the distractor dot -->
+        <dotAlpha>180</dotAlpha> <!-- transparency of the distractor dot, 0-255 (255 = fully opaque) -->
+        <dotDurFrames>20</dotDurFrames> <!-- how many display frames each distractor flash stays on screen (same meaning as old rfMapping_dots.xml 'frameCount') -->
+        <dotISIFrames>0</dotISIFrames> <!-- gap between distractor flashes, in display frames -->
+        <posShiftForCode>22000</posShiftForCode> <!-- offset added to each flash's x/y before sending as a code; chosen to fall in the 12697-31791 gap between other codes in use, AND inside the [1000,32000] window post-processing code keeps (values outside that window get silently dropped) - stored here (not hardcoded) so it's saved to xmlParams and stays recoverable if ever changed -->
+    </params>
+</stimulus>
