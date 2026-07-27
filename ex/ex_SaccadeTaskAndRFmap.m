@@ -2,18 +2,21 @@ function result = ex_SaccadeTaskAndRFmap(e)
 % ex file: ex_SaccadeTaskAndRFmap
 %
 % Combination of ex_activeFixation (RF mapping) and ex_SaccadeTask_varDelays
-% (memory/visually guided saccade). The trial runs exactly like a normal
-% memory-guided saccade task (fixate, peripheral target flashes, delay,
-% fixation point extinguishes as the go-cue, saccade to the remembered
-% target location, hold), but starting the moment initial fixation is
-% acquired, a second "distractor" dot begins flashing at a sequence of
-% locations around the screen (one dot visible at a time, cycling through
-% a shuffled position grid with no repeats until the grid is exhausted).
-% This distractor flashing runs continuously and independently of the
-% saccade-task timeline/logic, all the way through target onset, delay,
-% the go-cue, the saccade, and the post-saccade hold, stopping only when
-% the trial ends (either on a break/abort via 'all_off', or naturally once
-% the ex file returns after reward).
+% (memory/visually guided saccade). Full trial timeline:
+%   fixation acquired
+%   -> preStimFix hold (RF distractor NOT yet flashing)
+%   -> RF distractor starts flashing
+%   -> targetOnsetDelay hold (distractor flashing)
+%   -> saccade target on for targetDuration (distractor flashing)
+%   -> delay hold (distractor flashing)
+%   -> go-cue (fixation point off), saccade to target (distractor flashing)
+%   -> stayOnTarget hold on the target window (distractor flashing)
+%   -> RF distractor explicitly stops flashing
+%   -> postTargetBuffer hold on the target window (distractor OFF)
+%   -> reward, end of trial
+% The distractor's flashing window is therefore preStimFix through the
+% end of stayOnTarget - it does not flash before preStimFix elapses, and
+% is deliberately silent again during postTargetBuffer at the very end.
 %
 % Uses codes in the 2000s range to indicate saccade stimulus types
 % (unchanged from ex_SaccadeTask_varDelays):
@@ -49,6 +52,16 @@ function result = ex_SaccadeTaskAndRFmap(e)
 % px of the helper target, independent of the main target's size),
 % helperTargetRatio, antiSaccade, fixColorAnti, targWinRadScaleAnti,
 % InterTrialPause.
+%
+% XML REQUIREMENTS (new - RF-mapping trial-timeline additions)
+% preStimFix (ms) - how long to hold fixation after FIXATE before the
+%   RF-map distractor starts flashing. Plain fixation hold, distractor
+%   is not yet active during this period.
+% postTargetBuffer (ms) - after stayOnTarget succeeds, the RF-map
+%   distractor is explicitly stopped, and the subject must continue
+%   fixating the target window (flash-free) for this long before reward.
+%   Breaking fixation during it sends BROKE_TARG, same as breaking
+%   during stayOnTarget itself.
 %
 % XML REQUIREMENTS (RF-map distractor dot)
 % dotXPositions: column vector of candidate X offsets (px) from screen
@@ -206,9 +219,24 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if rand < e.fixJuice, giveJuice(1); end
     end
 
-    % KKN 2026/07/17 - initial fixation is acquired, so start the RF-map
-    % distractor dot cycling now, and keep it running for the rest of the
-    % trial. From here on, waitForMS/waitForFixation are swapped for the
+    % KKN 2026/07/17 - preStimFix: hold fixation for a bit BEFORE the
+    % RF-map distractor starts flashing. Plain waitForMS (not flash-aware)
+    % since the dot hasn't been initialized yet - nothing is flashing
+    % during this hold.
+    if ~waitForMS(e.preStimFix,e.fixX,e.fixY,params.fixWinRad)
+        sendCode(codes.BROKE_FIX);
+        msgAndWait('all_off');
+        sendCode(codes.FIX_OFF);
+        waitForMS(e.noFixTimeout);
+        result = codes.BROKE_FIX;
+        return;
+    end
+
+    % KKN 2026/07/17 - initial fixation is acquired (and preStimFix has
+    % elapsed), so start the RF-map distractor dot cycling now, and keep
+    % it running through the target hold (it explicitly stops before
+    % postTargetBuffer, near the end of the trial). From here on,
+    % waitForMS/waitForFixation are swapped for the
     % waitForMSFlash/waitForFixationFlash variants defined at the bottom
     % of this file, which also service the distractor dot every polling
     % iteration alongside the normal fixation/saccade checks.
@@ -367,6 +395,10 @@ function result = ex_SaccadeTaskAndRFmap(e)
             return;
         end
 
+        finalTargX = -newX;
+        finalTargY = -newY;
+        finalTargRad = targetWindowRadius;
+
     else
 
         targetWindowRadius = round(e.targWinRadScale*e.distance);
@@ -411,14 +443,31 @@ function result = ex_SaccadeTaskAndRFmap(e)
             return;
         end
 
+        finalTargX = newX;
+        finalTargY = newY;
+        finalTargRad = targetWindowRadius;
+
     end
 
-    % KKN 2026/07/17 - close out any still-flashing distractor before the
-    % trial ends successfully. Unlike the failure branches above, there is
-    % no 'all_off' on the success path, so without this a flash that
-    % happened to be mid-way through when stayOnTarget finished would
-    % otherwise just stay lit on screen indefinitely.
+    % KKN 2026/07/17 - RF-map distractor explicitly stops flashing now
+    % (forced off if mid-flash) - unlike the failure branches above,
+    % there is no 'all_off' on the success path, so without this a flash
+    % that happened to be mid-way through when stayOnTarget finished
+    % would otherwise just stay lit on screen indefinitely. The subject
+    % then has to continue fixating the target window, flash-free, for
+    % postTargetBuffer ms before reward. Uses plain waitForMS (not
+    % flash-aware) since the dot is intentionally not restarted here.
     dotState = rfDotForceOff(dotState);
+
+    if ~waitForMS(e.postTargetBuffer,finalTargX,finalTargY,finalTargRad)
+        % didn't stay on target through the flash-free buffer
+        sendCode(codes.BROKE_TARG);
+        msgAndWait('all_off');
+        sendCode(codes.FIX_OFF);
+        waitForMS(e.incorrectTimeout)
+        result = codes.BROKE_TARG;
+        return;
+    end
 
     sendCode(codes.FIXATE);
     sendCode(codes.CORRECT);

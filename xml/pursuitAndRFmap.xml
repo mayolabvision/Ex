@@ -8,10 +8,12 @@
         <fixColor>[0;0;255]</fixColor> <!-- [R;G;B] fixation point color -->
         <targetColor>[255;255;255]</targetColor> <!-- [R;G;B] pursuit target color (moving target and endpoint marker) -->
         <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <preStimFix>200</preStimFix> <!-- hold fixation this long AFTER acquiring it, BEFORE the RF-map distractor starts flashing (ms) -->
         <pursuitDuration>1000</pursuitDuration> <!-- how long the target translates across the screen before the subject must be holding at the endpoint (ms) -->
         <pursuitRadius>10</pursuitRadius> <!-- degrees visual angle - radius of the eye window that must track the moving target -->
         <noFixTimeout>2000</noFixTimeout> <!-- punishment timeout after an aborted/broken trial (ms) -->
         <stayOnTarget>1500</stayOnTarget> <!-- how long the eye must hold at the pursuit endpoint to count as correct (ms) -->
+        <postTargetBuffer>100</postTargetBuffer> <!-- after stayOnTarget succeeds, the RF-map distractor stops flashing and the subject must keep fixating the endpoint flash-free for this long before reward (ms) -->
         <endPursuitWinScale>1</endPursuitWinScale> <!-- scales the fixation window radius used for the endpoint hold -->
         <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
 
@@ -21,7 +23,7 @@
         <angle>[0:45:315]</angle> <!-- direction(s) the pursuit target travels (deg); crossed into separate conditions -->
         <jump>[-1 0 1]</jump> <!-- if a jump occurs and it's direction: -1 = backward; 0 = no jump; 1 = forward -->
 
-        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <!-- RF-map distractor dot (flashes from the end of preStimFix through the end of stayOnTarget, then explicitly stops for postTargetBuffer) -->
         <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->

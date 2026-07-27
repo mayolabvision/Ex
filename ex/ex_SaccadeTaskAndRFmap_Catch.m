@@ -1,32 +1,36 @@
 function result = ex_SaccadeTaskAndRFmap_Catch(e)
 % ex file: ex_SaccadeTaskAndRFmap_Catch
 %
-% Catch-trial variant of ex_SaccadeTaskAndRFmap. The trial starts exactly
-% the same way as a normal saccade+RF-mapping trial: fixate, the RF-map
-% distractor starts flashing once fixation is acquired, the peripheral
-% target flashes on/off per the usual stimType timing (2001/2002/2003 -
-% visually-guided/memory-guided/delayed-visually-guided), memory delay.
-%
-% The difference is entirely at what would be the go-cue moment: the
-% fixation point NEVER turns off, no saccade ever happens, and none of
-% the saccade-detection/target-acquisition machinery
+% Catch-trial variant of ex_SaccadeTaskAndRFmap. Full trial timeline:
+%   fixation acquired
+%   -> preStimFix hold (RF distractor NOT yet flashing)
+%   -> RF distractor starts flashing
+%   -> targetOnsetDelay hold (distractor flashing)
+%   -> peripheral target flashes on/off per stimType timing (distractor
+%      flashing) - target is never actually saccaded to
+%   -> delay hold (distractor flashing)
+%   -> catchLatencyBuffer hold on the ORIGINAL fixation point (distractor
+%      flashing) - fixed, standing in for the saccade initiation+
+%      execution time a real trial would spend here (there is no go-cue
+%      and no saccade in this task, but the trial should still take
+%      about as long as a real one)
+%   -> stayOnTarget hold on the ORIGINAL fixation point (distractor
+%      flashing) - drawn identically to the real task's target-hold
+%      requirement, just spent continuing to fixate the original spot
+%      instead of holding on a peripheral target
+%   -> RF distractor explicitly stops flashing
+%   -> postTargetBuffer hold on the ORIGINAL fixation point (distractor
+%      OFF)
+%   -> reward, end of trial
+% The fixation point itself NEVER turns off during any of this - there is
+% no go-cue and no saccade anywhere in this task, and none of the
+% saccade-detection/target-acquisition machinery
 % (saccadeInitiate/saccadeTime/targWinRadScale/antiSaccade/helperTarget*)
-% ever runs. Instead, the subject must simply continue fixating on the
-% ORIGINAL fixation point (there is no saccade, so there is no target
-% window to acquire) for a duration built to match the real task's
-% post-target timeline as closely as possible:
-%   catchLatencyBuffer (fixed, standing in for the saccade
-%     initiation+execution time a real trial would spend between the
-%     go-cue and reaching the target - that time doesn't happen here,
-%     but the trial should still take about as long)
-%   + stayOnTarget (drawn identically to the real task's target-hold
-%     requirement, just spent continuing to fixate the original spot
-%     instead of holding on a peripheral target)
-% The RF-map distractor keeps flashing throughout this whole hold,
-% exactly like the real task.
+% ever runs.
 %
-% XML PARAMETERS ARE IDENTICAL TO dirmemAndRFmap.xml, with one addition:
-% catchLatencyBuffer (ms) - see above. Recommended: 250.
+% XML PARAMETERS ARE IDENTICAL TO dirmemAndRFmap.xml (including
+% preStimFix and postTargetBuffer), with one addition: catchLatencyBuffer
+% (ms) - see above. Recommended: 250.
 %
 % Every other xml field (saccadeInitiate, saccadeTime, targWinRadScale,
 % antiSaccade, fixColorAnti, targWinRadScaleAnti, helperTargetColor,
@@ -154,8 +158,23 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
         if rand < e.fixJuice, giveJuice(1); end
     end
 
-    % initial fixation is acquired - start the RF-map distractor dot
-    % cycling now, and keep it running for the rest of the trial
+    % KKN 2026/07/17 - preStimFix: hold fixation for a bit BEFORE the
+    % RF-map distractor starts flashing. Plain waitForMS (not flash-aware)
+    % since the dot hasn't been initialized yet - nothing is flashing
+    % during this hold.
+    if ~waitForMS(e.preStimFix,e.fixX,e.fixY,params.fixWinRad)
+        sendCode(codes.BROKE_FIX);
+        msgAndWait('all_off');
+        sendCode(codes.FIX_OFF);
+        waitForMS(e.noFixTimeout);
+        result = codes.BROKE_FIX;
+        return;
+    end
+
+    % initial fixation is acquired (and preStimFix has elapsed) - start
+    % the RF-map distractor dot cycling now, and keep it running through
+    % the catch-hold (it explicitly stops before postTargetBuffer, near
+    % the end of the trial)
     dotState = rfDotInit(e,rfObjID);
 
     [ok,dotState] = waitForMSFlash(e.targetOnsetDelay,e.fixX,e.fixY,params.fixWinRad,dotState);
@@ -271,16 +290,30 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
         return;
     end
 
+    % KKN 2026/07/17 - RF-map distractor explicitly stops flashing now
+    % (forced off if mid-flash), so the code stream doesn't have a
+    % STIM_ON left orphaned without a matching STIM_OFF. The subject then
+    % has to continue fixating, flash-free, for postTargetBuffer ms
+    % before reward. Uses plain waitForMS (not flash-aware) since the dot
+    % is intentionally not restarted here.
+    dotState = rfDotForceOff(dotState);
+
+    if ~waitForMS(e.postTargetBuffer,e.fixX,e.fixY,params.fixWinRad)
+        sendCode(codes.BROKE_FIX);
+        msgAndWait('all_off');
+        sendCode(codes.FIX_OFF);
+        waitForMS(e.noFixTimeout);
+        result = codes.BROKE_FIX;
+        return;
+    end
+
     sendCode(codes.FIXATE);
     sendCode(codes.CORRECT);
     sendCode(codes.TARG_OFF);
     % KKN 2026/07/17 - unlike the real task (where fixation already went
     % off at the go-cue, long before this point), fixation has been on
     % this WHOLE trial in a catch trial, so it has to be explicitly
-    % cleared here before reward. Also close out any still-flashing
-    % distractor first, so the code stream doesn't have a STIM_ON left
-    % orphaned without a matching STIM_OFF.
-    dotState = rfDotForceOff(dotState);
+    % cleared here before reward.
     msgAndWait('all_off');
     sendCode(codes.FIX_OFF);
     sendCode(codes.REWARD);

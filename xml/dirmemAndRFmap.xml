@@ -15,6 +15,7 @@
         <helperTargetRatio>0</helperTargetRatio> <!-- proportion of trials the helper target turns on (0-1) -->
         <antiSaccade>0</antiSaccade> <!-- 0/1, whether this is an antisaccade trial; leave 0 for normal memory-guided saccades -->
         <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <preStimFix>200</preStimFix> <!-- hold fixation this long AFTER acquiring it, BEFORE the RF-map distractor starts flashing (ms) -->
         <targetDuration>200</targetDuration> <!-- how long the saccade target stays on screen (ms) -->
         <noFixTimeout>1000</noFixTimeout> <!-- punishment timeout after an aborted/broken-fixation trial (ms) -->
         <targetOnsetDelay>100</targetOnsetDelay> <!-- time after fixation acquired before the saccade target appears (ms) -->
@@ -22,11 +23,12 @@
         <saccadeInitiate>500</saccadeInitiate> <!-- max time allowed to leave the fixation window after the go-cue (ms) -->
         <saccadeTime>680</saccadeTime> <!-- max time allowed to reach the target window once the saccade starts (ms) -->
         <stayOnTarget>150</stayOnTarget> <!-- how long the eye must stay on the target to count as correct (ms) -->
+        <postTargetBuffer>100</postTargetBuffer> <!-- after stayOnTarget succeeds, the RF-map distractor stops flashing and the subject must keep fixating the target window flash-free for this long before reward (ms) -->
         <incorrectTimeout>1000</incorrectTimeout> <!-- punishment timeout for an incorrect trial (ms) -->
         <delay>20</delay> <!-- memory delay between target offset and the go-cue (fixation point extinguishing) (ms) -->
         <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
 
-        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <!-- RF-map distractor dot (flashes from the end of preStimFix through the end of stayOnTarget, then explicitly stops for postTargetBuffer) -->
         <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->

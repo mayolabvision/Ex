@@ -14,6 +14,7 @@
         <helperTargetRatio>0</helperTargetRatio> <!-- kept for xml compatibility; unused here -->
         <antiSaccade>0</antiSaccade> <!-- kept for xml compatibility; unused here (no saccade occurs) -->
         <timeToFix>1000</timeToFix> <!-- max time allowed to acquire initial fixation (ms) -->
+        <preStimFix>200</preStimFix> <!-- hold fixation this long AFTER acquiring it, BEFORE the RF-map distractor starts flashing (ms) -->
         <targetDuration>200</targetDuration> <!-- how long the target stays on screen (ms) -->
         <noFixTimeout>1000</noFixTimeout> <!-- punishment timeout after an aborted/broken-fixation trial (ms) -->
         <targetOnsetDelay>100</targetOnsetDelay> <!-- time after fixation acquired before the target appears (ms) -->
@@ -22,11 +23,12 @@
         <saccadeTime>680</saccadeTime> <!-- kept for xml compatibility; unused here (no saccade occurs) -->
         <stayOnTarget>150</stayOnTarget> <!-- how long the eye must continue fixating (the ORIGINAL fixation point) to count as correct, drawn identically to the real task's target-hold requirement (ms) -->
         <catchLatencyBuffer>250</catchLatencyBuffer> <!-- fixed buffer added after target presentation, standing in for the saccade initiation+execution time a real trial would spend here (ms) - this is the one field NOT in dirmemAndRFmap.xml -->
+        <postTargetBuffer>100</postTargetBuffer> <!-- after the catch-hold (catchLatencyBuffer+stayOnTarget) succeeds, the RF-map distractor stops flashing and the subject must keep fixating flash-free for this long before reward (ms) -->
         <incorrectTimeout>1000</incorrectTimeout> <!-- punishment timeout for an incorrect trial (ms) -->
         <delay>20</delay> <!-- memory delay between target offset and where the go-cue would happen in the real task (ms) -->
         <InterTrialPause>325</InterTrialPause> <!-- pause after reward before the next trial can start (ms) -->
 
-        <!-- RF-map distractor dot (flashes continuously from fixation acquisition through the end of the trial) -->
+        <!-- RF-map distractor dot (flashes from the end of preStimFix through the end of the catch-hold, then explicitly stops for postTargetBuffer) -->
         <dotXPositions>(-448:128:448)'</dotXPositions> <!-- candidate X offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotYPositions>(-320:128:320)'</dotYPositions> <!-- candidate Y offsets for the distractor grid, absolute screen coords (px); must stay a column vector -->
         <dotRad>30</dotRad> <!-- radius of the distractor dot (px) -->
