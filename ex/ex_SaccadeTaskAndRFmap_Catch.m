@@ -162,6 +162,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
     if ~ok
         % hold fixation before stimulus comes on
         sendCode(codes.BROKE_FIX);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.noFixTimeout);
@@ -191,6 +192,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
         if ~ok
             % didn't hold fixation during target display
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
@@ -206,6 +208,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
         if ~ok
             % didn't hold fixation during period after target offset
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(2500);
@@ -224,6 +227,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
         if ~ok
             % didn't hold fixation during target display
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
@@ -248,6 +252,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
     [ok,dotState] = waitForMSFlash(e.catchLatencyBuffer,e.fixX,e.fixY,params.fixWinRad,dotState);
     if ~ok
         sendCode(codes.BROKE_FIX);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.noFixTimeout);
@@ -258,6 +263,7 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
     [ok,dotState] = waitForMSFlash(e.stayOnTarget,e.fixX,e.fixY,params.fixWinRad,dotState);
     if ~ok
         sendCode(codes.BROKE_FIX);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.noFixTimeout);
@@ -271,7 +277,10 @@ function result = ex_SaccadeTaskAndRFmap_Catch(e)
     % KKN 2026/07/17 - unlike the real task (where fixation already went
     % off at the go-cue, long before this point), fixation has been on
     % this WHOLE trial in a catch trial, so it has to be explicitly
-    % cleared here before reward.
+    % cleared here before reward. Also close out any still-flashing
+    % distractor first, so the code stream doesn't have a STIM_ON left
+    % orphaned without a matching STIM_OFF.
+    dotState = rfDotForceOff(dotState);
     msgAndWait('all_off');
     sendCode(codes.FIX_OFF);
     sendCode(codes.REWARD);
@@ -392,6 +401,24 @@ function dotState = rfDotBeginFlash(dotState)
 
     dotState.phase = 'on';
     dotState.phaseTic = tic;
+end
+
+function dotState = rfDotForceOff(dotState)
+% KKN 2026/07/17 - if a distractor flash is currently on, turns it off
+% immediately and sends a matching STIM_OFF code. Needed because a trial
+% can end - either successfully or via a failure branch - mid-flash, and
+% nothing else would ever close that flash out: 'all_off' clears the
+% object visually but does NOT send any code, so a STIM_ON with no
+% matching STIM_OFF could otherwise be left in the code stream. Call this
+% at every trial-ending point, right before 'all_off'.
+
+    global codes;
+
+    if strcmp(dotState.phase,'on')
+        msg('obj_off %d',dotState.objID);
+        sendCode(codes.STIM_OFF);
+        dotState.phase = 'off';
+    end
 end
 
 % ---------------------------------------------------------------------

@@ -142,6 +142,7 @@ function result = ex_PursuitTaskAndRFmap(e)
     if ~ok
         % hold fixation before stimulus comes on
         sendCode(codes.BROKE_FIX);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.noFixTimeout);
@@ -159,6 +160,7 @@ function result = ex_PursuitTaskAndRFmap(e)
     if ~ok
         % keep eye position on target
         sendCode(codes.BROKE_PURSUIT);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(12697); % Custom code PURSUIT_TARG_OFF - for pursuit target offset
         waitForMS(e.noFixTimeout);
@@ -176,12 +178,18 @@ function result = ex_PursuitTaskAndRFmap(e)
     if ~ok
         % hold fixation before stimulus comes on
         sendCode(codes.BROKE_TARG);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.TARG3_OFF);
         waitForMS(e.noFixTimeout);
         result = codes.BROKE_TARG;
         return;
     end
+
+    % KKN 2026/07/17 - close out any still-flashing distractor before
+    % all_off, so the code stream doesn't have a STIM_ON left orphaned
+    % without a matching STIM_OFF.
+    dotState = rfDotForceOff(dotState);
 
     msgAndWait('all_off');
     sendCode(codes.TARG3_OFF);
@@ -346,6 +354,24 @@ function dotState = rfDotBeginFlash(dotState)
 
     dotState.phase = 'on';
     dotState.phaseTic = tic;
+end
+
+function dotState = rfDotForceOff(dotState)
+% KKN 2026/07/17 - if a distractor flash is currently on, turns it off
+% immediately and sends a matching STIM_OFF code. Needed because a trial
+% can end - either successfully or via a failure branch - mid-flash, and
+% nothing else would ever close that flash out: 'all_off' clears the
+% object visually but does NOT send any code, so a STIM_ON with no
+% matching STIM_OFF could otherwise be left in the code stream. Call this
+% at every trial-ending point, right before 'all_off'.
+
+    global codes;
+
+    if strcmp(dotState.phase,'on')
+        msg('obj_off %d',dotState.objID);
+        sendCode(codes.STIM_OFF);
+        dotState.phase = 'off';
+    end
 end
 
 % ---------------------------------------------------------------------

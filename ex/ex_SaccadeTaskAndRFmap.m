@@ -218,6 +218,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
     if ~ok
         % hold fixation before stimulus comes on
         sendCode(codes.BROKE_FIX);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.noFixTimeout);
@@ -246,6 +247,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~ok
             % didn't hold fixation during target display
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
@@ -261,6 +263,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~ok
             % didn't hold fixation during period after target offset
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(2500);
@@ -281,6 +284,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~ok
             % didn't hold fixation during target display
             sendCode(codes.BROKE_FIX);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.TARG_OFF);
             sendCode(codes.FIX_OFF);
@@ -309,6 +313,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
     if ok
         % didn't leave fixation window
         sendCode(codes.NO_CHOICE);
+        dotState = rfDotForceOff(dotState);
         msgAndWait('all_off');
         sendCode(codes.FIX_OFF);
         waitForMS(e.incorrectTimeout)
@@ -326,6 +331,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~choice
             % didn't reach target
             sendCode(codes.NO_CHOICE);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(e.incorrectTimeout)
@@ -353,6 +359,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~ok
             % didn't stay on target long enough
             sendCode(codes.BROKE_TARG);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(e.incorrectTimeout)
@@ -368,6 +375,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~choice
             % didn't reach target
             sendCode(codes.NO_CHOICE);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(e.incorrectTimeout)
@@ -395,6 +403,7 @@ function result = ex_SaccadeTaskAndRFmap(e)
         if ~ok
             % didn't stay on target long enough
             sendCode(codes.BROKE_TARG);
+            dotState = rfDotForceOff(dotState);
             msgAndWait('all_off');
             sendCode(codes.FIX_OFF);
             waitForMS(e.incorrectTimeout)
@@ -403,6 +412,13 @@ function result = ex_SaccadeTaskAndRFmap(e)
         end
 
     end
+
+    % KKN 2026/07/17 - close out any still-flashing distractor before the
+    % trial ends successfully. Unlike the failure branches above, there is
+    % no 'all_off' on the success path, so without this a flash that
+    % happened to be mid-way through when stayOnTarget finished would
+    % otherwise just stay lit on screen indefinitely.
+    dotState = rfDotForceOff(dotState);
 
     sendCode(codes.FIXATE);
     sendCode(codes.CORRECT);
@@ -566,6 +582,27 @@ function dotState = rfDotBeginFlash(dotState)
 
     dotState.phase = 'on';
     dotState.phaseTic = tic;
+end
+
+function dotState = rfDotForceOff(dotState)
+% KKN 2026/07/17 - if a distractor flash is currently on, turns it off
+% immediately and sends a matching STIM_OFF code. Needed because a trial
+% can end - either successfully or via a failure branch - mid-flash, and
+% nothing else would ever close that flash out: 'all_off' clears the
+% object visually but does NOT send any code (so a STIM_ON with no
+% matching STIM_OFF could be left in the code stream), and on the success
+% path specifically there's no 'all_off' at all, so a mid-flash dot would
+% otherwise just stay lit on screen indefinitely with nothing left to
+% ever turn it off. Call this at every trial-ending point, right before
+% 'all_off' (or before the final reward codes on success).
+
+    global codes;
+
+    if strcmp(dotState.phase,'on')
+        msg('obj_off %d',dotState.objID);
+        sendCode(codes.STIM_OFF);
+        dotState.phase = 'off';
+    end
 end
 
 % ---------------------------------------------------------------------
